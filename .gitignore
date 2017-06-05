@@ -1,0 +1,45 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+
+# Mine
+*/*.psd
+*/*.ai
+docs/
+notes/
+notes
+*~
+clean.sh
+
+lib/SPQR/
+lib/quicksort.py
+lib/sort_points.py
+src/_spqr*
+
+*.mp4
+*.avi
+
+img/fp-tiffs/
+
+# Models
+models/turbosquid/
+models/spinosaurus 2014.obj
+models/turbosquid.zip
+
+*.blend1
+*.blend2
+octave-workspace
+
+*.mat
+
+tools/batch.py
+
+img/dirichlet_mask.png
+img/lsq1_mask.png
+img/lsq2_mask.png
+img/lsq_mask.png
+
+energies/*
+!energies/paper-energies-table.csv

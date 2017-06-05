@@ -1,0 +1,4 @@
+[submodule "lib/PySPQR"]
+	path = lib/PySPQR
+	url = git@github.com:zfergus2/PySPQR.git
+	branch = master
