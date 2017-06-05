@@ -1,0 +1,67 @@
+<html>
+<head>
+<script>
+function minimize()
+{
+    console.log("Minimizing Texture");
+    var objfile = document.getElementById("obj-input").files[0];
+    console.log(objfile);
+    var texfile = document.getElementById("tex-input").files[0];
+    console.log(texfile);
+}
+
+function readSingleFile(e) {
+  var file = e.target.files[0];
+  if (!file) {
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var contents = e.target.result;
+    //displayContents(contents);
+  };
+  reader.readAsText(file);
+}
+
+function displayContents(contents) {
+  var element = document.getElementById('file-content');
+  element.innerHTML = contents;
+}
+</script>
+</head>
+<body>
+
+OBJ Model:<br>
+<input type="file" id="obj-input"/><br>
+<br>
+
+Texture Image:<br>
+<input type="file" id="tex-input"/><br>
+<br>
+
+Method of solving:
+<form action="">
+  <input type="radio" name="method" value="weighted" checked="checked">Weighted<br>
+  <input type="radio" name="method" value="nullspace">Nullspace<br>
+</form>
+
+Type of Value Preserving Energy:
+<form action="">
+  <input type="radio" name="sv" value="none" checked="checked">None<br>
+  <input type="radio" name="sv" value="texture">Texture<br>
+  <input type="radio" name="sv" value="lerp">Linear Interpolation<br>
+</form>
+
+Global effects:
+<form action="">
+  <input type="checkbox" name="global" value="global">Global minimization<br>
+</form>
+
+Data file as texture:
+<form action="">
+  <input type="checkbox" name="data" value="data">Data file<br>
+</form>
+
+<input type="submit" value="Submit" onclick="minimize();"/>
+</body>
+</html>
