@@ -1,67 +1,67 @@
 <html>
 <head>
-<script>
-function minimize()
-{
-    console.log("Minimizing Texture");
-    var objfile = document.getElementById("obj-input").files[0];
-    console.log(objfile);
-    var texfile = document.getElementById("tex-input").files[0];
-    console.log(texfile);
-}
+    <link rel="stylesheet" type="text/css" href="./static/styles/theme.css">
 
-function readSingleFile(e) {
-  var file = e.target.files[0];
-  if (!file) {
-    return;
-  }
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    var contents = e.target.result;
-    //displayContents(contents);
-  };
-  reader.readAsText(file);
-}
+    <script>
+        function minimize()
+        {
+            console.log("Minimizing Texture");
+            var objfile = document.getElementById("obj-input").files[0];
+            console.log(objfile);
+            var texfile = document.getElementById("tex-input").files[0];
+            console.log(texfile);
+        }
 
-function displayContents(contents) {
-  var element = document.getElementById('file-content');
-  element.innerHTML = contents;
-}
-</script>
+        function readSingleFile(e) {
+          var file = e.target.files[0];
+          if (!file) {
+            return;
+          }
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            var contents = e.target.result;
+            //displayContents(contents);
+          };
+          reader.readAsText(file);
+        }
+
+        function displayContents(contents) {
+          var element = document.getElementById('file-content');
+          element.innerHTML = contents;
+        }
+    </script>
 </head>
 <body>
+    <h1>Seam Minimization</h1>
+    <form action=""> <!-- method="post" enctype=multipart/form-data -->
+        <label>OBJ Model:</label><br>
+        <input type="file" name="obj-input"/><br>
+        <br>
 
-OBJ Model:<br>
-<input type="file" id="obj-input"/><br>
-<br>
+        <label>Texture Image:</label><br>
+        <input type="file" name="tex-input"/><br>
+        <br>
 
-Texture Image:<br>
-<input type="file" id="tex-input"/><br>
-<br>
+        <label>Method of solving:</label><br>
+        <input type="radio" name="method" value="weighted" checked="checked">Weighted</input><br>
+        <input type="radio" name="method" value="nullspace">Nullspace</input><br>
+        <br>
 
-Method of solving:
-<form action="">
-  <input type="radio" name="method" value="weighted" checked="checked">Weighted<br>
-  <input type="radio" name="method" value="nullspace">Nullspace<br>
-</form>
+        <label>Type of Value Preserving Energy:</label><br>
+        <input type="radio" name="sv" value="none" checked="checked">None</input><br>
+        <input type="radio" name="sv" value="texture">Texture</input><br>
+        <input type="radio" name="sv" value="lerp">Linear Interpolation</input><br>
+        <br>
 
-Type of Value Preserving Energy:
-<form action="">
-  <input type="radio" name="sv" value="none" checked="checked">None<br>
-  <input type="radio" name="sv" value="texture">Texture<br>
-  <input type="radio" name="sv" value="lerp">Linear Interpolation<br>
-</form>
+        <label>Global effects:</label><br>
+        <input type="checkbox" name="global" value="global">Global minimization</input><br>
+        <br>
 
-Global effects:
-<form action="">
-  <input type="checkbox" name="global" value="global">Global minimization<br>
-</form>
+        <label>Data file as texture:</label><br>
+        <input type="checkbox" name="data" value="data">Data file</input><br>
+        <br>
 
-Data file as texture:
-<form action="">
-  <input type="checkbox" name="data" value="data">Data file<br>
-</form>
-
-<input type="submit" value="Submit" onclick="minimize();"/>
+        <input type="submit" value="Submit" onclick="minimize();"/>
+    </form>
 </body>
 </html>

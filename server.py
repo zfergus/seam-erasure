@@ -47,7 +47,7 @@ def minimize():
         buffer = cStringIO.StringIO()
         texture.save(buffer, format="PNG")
         data_uri = base64.b64encode(buffer.getvalue())
-        img_tag = '<img src="data:image/png;base64,{0}" style="border-style: solid;border-width:1px">'.format(data_uri)
+        img_tag = '<img src="data:image/png;base64,{0}">'.format(data_uri)
 
         return ('<h1>Minimized Texture:</h1>%s' % img_tag)
     return "Error"

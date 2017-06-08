@@ -1,0 +1,24 @@
+body{
+    background-color: #2A3132;
+    color: white;
+}
+
+label{
+    font-size: 20px;
+    font-weight: bold;
+}
+
+h1{
+    margin: 20px;
+    margin-left:10%;
+    margin-right: 10%;
+    padding-bottom: 10px;
+    text-align: center;
+    border-bottom-width: medium;
+    border-bottom-style: solid;
+}
+
+form{
+    margin-left:20%;
+    margin-right:20%;
+}

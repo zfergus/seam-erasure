@@ -1,61 +1,37 @@
 <html>
 <head>
-<style>
-    body{
-        background-color: #2A3132;
-        color: white;
-    }
+    <link rel="stylesheet" type="text/css"
+        href="{{ url_for('static',filename='styles/theme.css') }}">
 
-    label{
-        font-size: 20px;
-        font-weight: bold;
-    }
+    <script>
+        function minimize()
+        {
+            var objfile = document.getElementById("obj-input").files[0];
+            var texfile = document.getElementById("tex-input").files[0];
+            location.href = '/minimized/'
+            console.log("Minimizing Texture");
+            console.log(objfile);
+            console.log(texfile);
+        }
 
-    h1{
-        margin: 20px;
-        margin-left:10%;
-        margin-right: 10%;
-        padding-bottom: 10px;
-        text-align: center;
-        border-bottom-width: medium;
-        border-bottom-style: solid;
-    }
+        function readSingleFile(e) {
+          var file = e.target.files[0];
+          if (!file) {
+            return;
+          }
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            var contents = e.target.result;
+            //displayContents(contents);
+          };
+          reader.readAsText(file);
+        }
 
-    form{
-        margin-left:20%;
-        margin-right:20%;
-    }
-</style>
-
-<script>
-function minimize()
-{
-    var objfile = document.getElementById("obj-input").files[0];
-    var texfile = document.getElementById("tex-input").files[0];
-    location.href = '/minimized/'
-    console.log("Minimizing Texture");
-    console.log(objfile);
-    console.log(texfile);
-}
-
-function readSingleFile(e) {
-  var file = e.target.files[0];
-  if (!file) {
-    return;
-  }
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    var contents = e.target.result;
-    //displayContents(contents);
-  };
-  reader.readAsText(file);
-}
-
-function displayContents(contents) {
-  var element = document.getElementById('file-content');
-  element.innerHTML = contents;
-}
-</script>
+        function displayContents(contents) {
+          var element = document.getElementById('file-content');
+          element.innerHTML = contents;
+        }
+    </script>
 </head>
 <body>
 
