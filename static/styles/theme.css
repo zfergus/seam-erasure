@@ -1,14 +1,14 @@
-body{
+body {
     background-color: #2A3132;
     color: white;
 }
 
-label{
+label {
     font-size: 20px;
     font-weight: bold;
 }
 
-h1{
+h1 {
     margin: 20px;
     margin-left:10%;
     margin-right: 10%;
@@ -18,7 +18,13 @@ h1{
     border-bottom-style: solid;
 }
 
-form{
+form {
+    margin-left:20%;
+    margin-right:20%;
+}
+
+
+body > p {
     margin-left:20%;
     margin-right:20%;
 }

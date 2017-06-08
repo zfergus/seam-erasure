@@ -2,36 +2,6 @@
 <head>
     <link rel="stylesheet" type="text/css"
         href="{{ url_for('static',filename='styles/theme.css') }}">
-
-    <script>
-        function minimize()
-        {
-            var objfile = document.getElementById("obj-input").files[0];
-            var texfile = document.getElementById("tex-input").files[0];
-            location.href = '/minimized/'
-            console.log("Minimizing Texture");
-            console.log(objfile);
-            console.log(texfile);
-        }
-
-        function readSingleFile(e) {
-          var file = e.target.files[0];
-          if (!file) {
-            return;
-          }
-          var reader = new FileReader();
-          reader.onload = function(e) {
-            var contents = e.target.result;
-            //displayContents(contents);
-          };
-          reader.readAsText(file);
-        }
-
-        function displayContents(contents) {
-          var element = document.getElementById('file-content');
-          element.innerHTML = contents;
-        }
-    </script>
 </head>
 <body>
 
