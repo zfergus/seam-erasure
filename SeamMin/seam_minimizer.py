@@ -69,13 +69,13 @@ class SeamValueMethod:
 
 def display_quadratic_energy(coeffs, x0, x, name, out=sys.stdout):
     """ Compute the energy of a solution given the coefficents. """
-    print("%s Before After" % name, file=out)
+    print("%s Before After" % name)
     E0 = x0.T.dot(coeffs.Q.dot(x0)) + 2.0 * x0.T.dot(coeffs.L.A) + coeffs.C.A
     E = x.T.dot(coeffs.Q.dot(x)) + 2.0 * x.T.dot(coeffs.L.A) + coeffs.C.A
     depth = (x.shape + (1,))[1]
     for i in range(depth):
         print("%d %g %g" % (i, E0[i] if depth < 2 else E0[i, i],
-            E[i] if depth < 2 else E[i, i]), file=out)
+            E[i] if depth < 2 else E[i, i]))
 
 
 def display_energies(energies, x0, x, out=sys.stdout):
@@ -95,8 +95,8 @@ def display_energies(energies, x0, x, out=sys.stdout):
         if(energy):
             display_quadratic_energy(energy, x0, x, name, out=out)
         else:
-            print("%s\nN/a" % name, file=out)
-        print("", file=out)
+            print("%s\nN/a" % name)
+        print("")
 
 
 def compute_seam_lengths(mesh, seam):
@@ -158,19 +158,12 @@ def compute_energies(mesh, texture, sv_method=SeamValueMethod.NONE):
     # Constrain the values
     print("Building Least Squares Constraints")
     lsq_mask = mask_inside_seam(mesh, bag_of_edges, width, height)
-    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    save_texture(to_uint8(lsq_mask.astype(float)),
-        os.path.join(root, "img", "lsq_mask.png"))
 
     lsq1_mask = mask_seam(mesh, bag_of_edges, width, height)
     LSQ1 = lsq_constraints.constrain_values(lsq1_mask, textureVec)
-    save_texture(to_uint8(lsq1_mask.astype(float)),
-        os.path.join(root, "img", "lsq1_mask.png"))
 
     lsq2_mask = lsq_mask ^ lsq1_mask
     LSQ2 = lsq_constraints.constrain_values(lsq2_mask, textureVec)
-    save_texture(to_uint8(lsq2_mask.astype(float)),
-        os.path.join(root, "img", "lsq2_mask.png"))
 
     LSQ = QuadEnergy(LSQ1.Q + LSQ2.Q, LSQ1.L + LSQ2.L, LSQ1.C + LSQ2.C)
     del lsq1_mask, lsq2_mask
@@ -182,12 +175,7 @@ def compute_energies(mesh, texture, sv_method=SeamValueMethod.NONE):
         mesh, width, height, init_mask=~lsq_mask)
     L = dirichlet.dirichlet_energy(height, width, textureVec, ~dirichlet_mask,
         lsq_mask)
-    save_texture(to_uint8((~dirichlet_mask).astype(float)),
-        os.path.join(root, "img", "dirichlet_mask.png"))
     print("Done\n")
-
-    # LSQ = lsq_constraints.constrain_values(numpy.ones((height, width)),
-    #     textureVec)
 
     return Energies(BLE=BLE, SV=SV, SG=SG, LSQ=LSQ, LSQ1=LSQ1, LSQ2=LSQ2, L=L)
 
@@ -295,7 +283,7 @@ def solve_seam(mesh, texture, bounds=None, display_energy_file=None,
 
 # Quick test of this code; main.py is a cmd-line tool for this file.
 if __name__ == "__main__":
-    obj = obj_reader.load_obj("../models/cube.obj")
+    obj = obj_reader.load_obj("cube_edit.obj")
     # obj = obj_reader.load_obj("../models/male_low_poly_edited.obj")
     print("")
     texture = numpy.ones((100, 100))

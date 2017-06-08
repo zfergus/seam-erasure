@@ -1,0 +1,95 @@
+<html>
+<head>
+<style>
+    body{
+        background-color: #2A3132;
+        color: white;
+    }
+
+    label{
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    h1{
+        margin: 20px;
+        margin-left:10%;
+        margin-right: 10%;
+        padding-bottom: 10px;
+        text-align: center;
+        border-bottom-width: medium;
+        border-bottom-style: solid;
+    }
+
+    form{
+        margin-left:20%;
+        margin-right:20%;
+    }
+</style>
+
+<script>
+function minimize()
+{
+    var objfile = document.getElementById("obj-input").files[0];
+    var texfile = document.getElementById("tex-input").files[0];
+    location.href = '/minimized/'
+    console.log("Minimizing Texture");
+    console.log(objfile);
+    console.log(texfile);
+}
+
+function readSingleFile(e) {
+  var file = e.target.files[0];
+  if (!file) {
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var contents = e.target.result;
+    //displayContents(contents);
+  };
+  reader.readAsText(file);
+}
+
+function displayContents(contents) {
+  var element = document.getElementById('file-content');
+  element.innerHTML = contents;
+}
+</script>
+</head>
+<body>
+
+<h1>Seam Minimization</h1>
+<form action="/minimized" method="post" enctype=multipart/form-data>
+    <label>OBJ Model:</label><br>
+    <input type="file" name="obj-input"/><br>
+    <br>
+
+    <label>Texture Image:</label><br>
+    <input type="file" name="tex-input"/><br>
+    <br>
+
+    <label>Method of solving:</label><br>
+    <input type="radio" name="method" value="weighted" checked="checked">Weighted</input><br>
+    <input type="radio" name="method" value="nullspace">Nullspace</input><br>
+    <br>
+
+    <label>Type of Value Preserving Energy:</label><br>
+    <input type="radio" name="sv" value="none" checked="checked">None</input><br>
+    <input type="radio" name="sv" value="texture">Texture</input><br>
+    <input type="radio" name="sv" value="lerp">Linear Interpolation</input><br>
+    <br>
+
+    <label>Global effects:</label><br>
+    <input type="checkbox" name="global" value="global">Global minimization</input><br>
+    <br>
+
+    <label>Data file as texture:</label><br>
+    <input type="checkbox" name="data" value="data">Data file</input><br>
+    <br>
+
+    <input type="submit" value="Submit" onclick=""/>
+</form>
+
+</body>
+</html>
