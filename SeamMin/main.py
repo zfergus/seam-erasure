@@ -16,13 +16,11 @@ import pdb
 
 import numpy
 
-import includes
-
 import obj_reader
-import weight_data
 import texture
 import seam_minimizer
 from util import to_uint8
+from lib import weight_data
 
 InputTextureFile = recordclass("InputTextureFile", ["name", "depth", "isFloat",
     "isDataFile"])
@@ -227,14 +225,14 @@ if __name__ == '__main__':
         os.path.splitext(os.path.basename(in_mesh))[0],
         os.path.splitext(os.path.basename(in_texture))[0],
         "global-" if do_global else ""))
-    out_file = open(os.path.join(root, "energies", energy_fname), "w")
+    # out_file = open(os.path.join(root, "energies", energy_fname), "w")
+    out_file = None
 
     print("Model: %s\nTexture: %s\n" % (os.path.basename(in_mesh),
         os.path.basename(in_texture)), file=out_file)
 
-    out = seam_minimizer.solve_seam(mesh, textureData, method=method,
-        display_energy_file=out_file, bounds=bounds, sv_method=sv_method,
-        do_global=do_global)
+    out = seam_minimizer.solve_seam(mesh, textureData,
+        display_energy_file=out_file, sv_method=sv_method, do_global=do_global)
 
     minVal = out.min()
     maxVal = out.max()
@@ -244,7 +242,7 @@ if __name__ == '__main__':
     saveTextures(out.reshape((height, width, -1)), textures, out_texture,
         loadFromDirectory)
 
-    print("Runtime: %g" % (time.time() - startTime), file=out_file)
-    out_file.close()
+    # print("Runtime: %g" % (time.time() - startTime), file=out_file)
+    # out_file.close()
 
     print("\nTotal Runtime: %.2f seconds" % (time.time() - startTime))

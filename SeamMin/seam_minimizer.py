@@ -6,9 +6,6 @@ Written by Zachary Ferguson
 
 from __future__ import print_function
 
-import pdb
-
-import os
 import sys
 
 from multiprocessing import Process
@@ -19,18 +16,15 @@ import numpy
 
 import obj_reader
 from find_seam import find_seam, seam_to_UV
-from util import *
 import bilerp_energy
 import lsq_constraints
 from mask import *
-from seam_loops import *
 import dirichlet
 import seam_gradient
 import seam_value_energy_texture
 import seam_value_energy_lerp
 from texture import save_texture
-from null_space_method import NullSpaceMethod
-import inequalities
+from util import *
 
 energies_str = "BLE, SV, SG, LSQ, LSQ1, LSQ2, L"
 Energies = recordclass("Energies", energies_str)
@@ -151,7 +145,7 @@ def compute_energies(mesh, texture, sv_method=SeamValueMethod.NONE):
     SV = SeamValueMethod.compute_energy(sv_method, mesh, bag_of_edges, width,
         height, textureVec)
 
-    # Find all of the seam loops
+    # All edges unsorted
     bag_of_edges = ([edge for edgepair in uv_seam for edge in edgepair] +
         uv_boundary + uv_foldovers)
 
@@ -180,22 +174,12 @@ def compute_energies(mesh, texture, sv_method=SeamValueMethod.NONE):
     return Energies(BLE=BLE, SV=SV, SG=SG, LSQ=LSQ, LSQ1=LSQ1, LSQ2=LSQ2, L=L)
 
 
-def solve_seam(mesh, texture, bounds=None, display_energy_file=None,
-        method="weighted", sv_method=SeamValueMethod.NONE, do_global=False):
+def solve_seam(mesh, texture, display_energy_file=None,
+        sv_method=SeamValueMethod.NONE, do_global=False):
     """
     Solves for the minimized seam values.
     Returns the minimized texture as a numpy array, shape = (N, depth)
     """
-    method = method.lower()
-    if(method != "nullspace" and method != "weighted"):
-        raise ValueError("Invalild method for solving seam values, %s." %
-            method)
-
-    # Assert for valid bounds argument
-    if(bounds is not None and len(bounds) != 2):
-        raise ValueError("Invalid bounds for solving seam values, %s." %
-            [bounds])
-
     height, width, depth = (texture.shape + (1,))[:3]
     N = width * height
 
@@ -207,69 +191,28 @@ def solve_seam(mesh, texture, bounds=None, display_energy_file=None,
     print("Solving for minimal energy solution")
     sys.stdout.flush()
 
-    if(method == "nullspace"):
-        # Print progress dots.
-        dot_process = Process(target = print_dots)
-        # dot_process.start()
+    # Minimize energy with constraints (Quad * x = lin)
+    # Weights in the order [bleW, svW, sgW, lsqW, diriW]
+    if(do_global):
+        weights = 1e10, 1e2, 1e2, 1e2, 1e0
+    else:
+        weights = 1e10, 1e2, 1e2, 1e4, 1e0
 
-        # Lexicographical Ordering of the quadratic energies
-        order = [LSQ1, BLE, SV, LSQ2, SG, L]
-        H = [] # Quadtratic Terms
-        f = [] # Linear Terms
-        for E in order:
-            if E is not None:
-                H.append(E.Q)
-                f.append(E.L)
+    quad = scipy.sparse.csc_matrix((N, N)) # Quadratic term
+    lin = scipy.sparse.csc_matrix((N, depth)) # Linear term
+    for weight, E in zip(weights, [BLE, SV, SG, LSQ, L]):
+        if E is not None:
+            quad += weight * E.Q
+            lin += weight * E.L
 
-        try:
-            solution = NullSpaceMethod(H, f, bounds=bounds).A
-        finally:
-            # dot_process.terminate()
-            pass
-    elif(method == "weighted"):
-        # Minimize energy with constraints (Quad * x = lin)
-        # Weights in the order [bleW, svW, sgW, lsqW, diriW]
-        if(do_global):
-            weights = 1e10, 1e2, 1e2, 1e2, 1e0
-        else:
-            weights = 1e10, 1e2, 1e2, 1e4, 1e0
+    # Print progress dots.
+    dot_process = Process(target = print_dots)
+    dot_process.start()
 
-        quad = scipy.sparse.csc_matrix((N, N)) # Quadratic term
-        lin = scipy.sparse.csc_matrix((N, depth)) # Linear term
-        for weight, E in zip(weights, [BLE, SV, SG, LSQ, L]):
-            if E is not None:
-                quad += weight * E.Q
-                lin += weight * E.L
-
-        # Should the solution be bounded in the range [a, b] for a, b = bounds
-        # TODO: Test the bounding constraints more.
-        if(bounds):
-            # Weight the Quad and linear terms to be greater than the
-            # inequality.
-            # TODO: Use a different solver to explain the need for this weight.
-            cvxW = 1.0e8 * N
-            quad = (cvxW * quad).tocoo()
-            lin *= cvxW
-
-            # CVXOPT solver format change.
-            P = cvxopt.spmatrix(quad.data, quad.row.astype(int),
-                quad.col.astype(int), size=quad.shape)
-            q = cvxopt.matrix(lin)
-
-            G, h = inequalities.CVXOPTBoundingMatrix(lin.shape, bounds)
-
-            solution = inequalities.cvxopt_solve_all_depth(
-                lin.shape, P, q, G=G, h=h)
-
-        else:
-            # Print progress dots.
-            dot_process = Process(target = print_dots)
-            dot_process.start()
-
-            try:
-                solution = scipy.sparse.linalg.spsolve(quad, -lin)
-            finally:
-                dot_process.terminate()
+    try:
+        solution = scipy.sparse.linalg.spsolve(quad, -lin)
+    finally:
+        dot_process.terminate()
 
     print("Done\n")
 

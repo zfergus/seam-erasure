@@ -266,17 +266,6 @@ def coo_diag(vals):
     return sparse.coo_matrix((vals, (indices, indices)))
 
 
-def test_against_dirichlet():
-    print('=== test_against_dirichlet() ===')
-
-    import dirichlet_old
-    for rows, cols in [(2, 2), (2, 3), (3, 2), (30, 2), (2, 30), (3, 3),
-                       (30, 30)]:
-        print(rows, 'rows by', cols, 'cols:', (
-            abs(dirichlet_old.gen_symmetric_grid_laplacian2(rows, cols) -
-                gen_symmetric_grid_laplacian(rows, cols))).sum())
-
-
 def test_mask():
     print('=== test_mask() ===')
 
@@ -296,7 +285,6 @@ def test_mask():
     print(4 * L.diagonal().reshape(shape))
 
 if __name__ == '__main__':
-    test_against_dirichlet()
     test_mask()
     sizes = [(4, 4, 1), (10, 10, 1), (100, 100, 1), (1000, 1000, 1)]
     for size in sizes:

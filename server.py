@@ -8,8 +8,8 @@ from PIL import Image
 from flask import Flask, request, render_template, url_for, flash, redirect
 from werkzeug.utils import secure_filename
 
-from lib import weight_data
 from SeamMin import seam_minimizer, obj_reader, util
+from SeamMin.lib import weight_data
 
 
 app = Flask(__name__)
@@ -85,15 +85,14 @@ def minimize():
         do_global = "global" in request.form
 
         out = seam_minimizer.solve_seam(mesh, textureData,
-            method=request.form["method"], display_energy_file=None,
-            bounds=None, do_global=do_global, sv_method=sv_method)
+            display_energy_file=None, do_global=do_global, sv_method=sv_method)
 
         out = out.reshape((height, width, -1))
         if(out.shape[2] < 2):
             out = numpy.squeeze(out, axis=2)
         if(not isFloatTexture):
             out = util.to_uint8(out)
-        if(isDataFile):
+        if(isDataFile or isFloatTexture):
             # flash("Data download not implemented.")
             return render_template('min-form.html')
         else:
@@ -101,8 +100,6 @@ def minimize():
             buffer = cStringIO.StringIO()
             texture.save(buffer, format="PNG")
             data_uri = base64.b64encode(buffer.getvalue())
-            # img_tag = '<img src="data:image/png;base64,{0}">'.format(data_uri)
-            # return ('<h1>Minimized Texture:</h1>%s' % img_tag)
             return render_template('min-results.html', min_tex=data_uri,
                 runtime=("%.2f" % (time.time() - startTime)))
     return render_template('min-form.html')

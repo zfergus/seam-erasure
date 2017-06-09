@@ -9,8 +9,6 @@ import numpy
 import scipy.sparse
 import itertools
 
-import includes
-
 from bilerp_energy import bilerp_coeffMats
 
 from seam_intervals import compute_edge_intervals
