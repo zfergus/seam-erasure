@@ -11,22 +11,19 @@ from numpy import *
 import gzip
 
 
-def read_tex_from_path(path):
+def read_tex_from_file(ioFile):
     '''
     Reads a .data file into memory.
 
     Inputs:
-        path: a path to the .data file
+        ioFile: a file for the .data file
 
     Returns:
         width-by-height-by-#channels numpy float32 array of data
         width-by-height numpy boolean array where True values correspond to
             values where weights are zero in all channels.
     '''
-
-    print('+ Loading:', path)
-
-    f = gzip.open(path, 'rb')
+    f = gzip.GzipFile(fileobj=ioFile, mode='rb')
 
     # fromfile() is a numpy function
     # UPDATE: We can't use fromfile() on a gzip file object. We have to read
@@ -51,13 +48,56 @@ def read_tex_from_path(path):
         # Update the mask with any nonzero entries.
         mask = logical_or(mask, data != 0)
         result[:, :, chan] = data
+    result = result[::-1]
 
-    f.close()
+    return result, mask
+
+
+def read_tex_from_path(path):
+    '''
+    Reads a .data file into memory.
+
+    Inputs:
+        path: a path to the .data file
+
+    Returns:
+        width-by-height-by-#channels numpy float32 array of data
+        width-by-height numpy boolean array where True values correspond to
+            values where weights are zero in all channels.
+    '''
+
+    print('+ Loading:', path)
+
+    with file(path, 'rb') as f:
+        result, mask = read_tex_from_path(f)
 
     print('- Loaded:', path)
 
-    result = result[::-1]
     return result, mask
+
+
+def write_tex_to_file(ioFile, data):
+    '''
+    Saves a .data to the given file.
+
+    Inputs:
+        ioFile: a File at which to save the .data file
+        data: width-by-height-by-#channels numpy float32 array of data
+    '''
+
+    data = data[::-1]
+
+    f = gzip.GzipFile(fileobj=ioFile, mode='wb')
+
+    header = zeros(3, dtype = uint32)
+    header[:] = data.shape
+
+    f.write(getbuffer(header))
+
+    channel = zeros((data.shape[0], data.shape[1]), dtype = float32)
+    for ch in range(data.shape[2]):
+        channel[:] = data[:, :, ch]
+        f.write(getbuffer(channel))
 
 
 def write_tex_to_path(path, data):
@@ -71,21 +111,8 @@ def write_tex_to_path(path, data):
 
     print('+ Saving:', path)
 
-    data = data[::-1]
-
-    f = gzip.open(path, 'wb')
-
-    header = zeros(3, dtype = uint32)
-    header[:] = data.shape
-
-    f.write(getbuffer(header))
-
-    channel = zeros((data.shape[0], data.shape[1]), dtype = float32)
-    for ch in range(data.shape[2]):
-        channel[:] = data[:, :, ch]
-        f.write(getbuffer(channel))
-
-    f.close()
+    with file(path, 'wb') as f:
+        write_tex_to_file(f, data)
 
     print('- Saved:', path)
 

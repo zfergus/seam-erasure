@@ -106,7 +106,7 @@ def mask_inside_seam(mesh, seam_edges, width, height):
         for fv in face]) for face in mesh.f]
 
     # This mask should be small enough for a dense matrix
-    mask = numpy.zeros((width, height), dtype = bool)
+    mask = numpy.zeros((height, width), dtype = bool)
 
     # Constrain all the pixels in seam_pixels that are inside a face
     pts = numpy.array(list(seam_pixels))
