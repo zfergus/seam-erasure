@@ -159,10 +159,9 @@ def mask_inside_faces(mesh, width, height, init_mask = None):
         for fv in face]) for face in mesh.f]
 
     # This mask should be small enough for a dense matrix
-    if(init_mask is None):
-        mask = numpy.zeros((width, height), dtype = bool)
-    else:
-        mask = init_mask
+    mask = init_mask
+    if(mask is None):
+        mask = numpy.zeros((height, width), dtype = bool)
 
     for i, face in enumerate(faces):
         print_progress(i / float(len(faces))) # Progress tracker

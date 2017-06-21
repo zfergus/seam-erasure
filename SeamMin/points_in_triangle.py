@@ -1,4 +1,8 @@
-""" Utility file for testing if points are in a given triangle. """
+"""
+Utility file for testing if points are in a given triangle.
+
+Written by Zachary Ferguson
+"""
 
 import numpy
 

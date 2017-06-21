@@ -40,6 +40,7 @@ from __future__ import print_function, division
 
 import collections
 
+import numpy
 from numpy import *
 from scipy import sparse
 
@@ -68,6 +69,8 @@ def grad_and_mass(rows, cols, mask = None, skip = None):
     Matrices returned are scipy.sparse matrices.
     """
 
+    print_progress(0)
+
     assert rows > 0 and cols > 0
 
     if mask is not None:
@@ -85,122 +88,66 @@ def grad_and_mass(rows, cols, mask = None, skip = None):
     # because the right-most column doesn't have them.
     num_Gcol = rows * (cols - 1)
 
-    # coo matrix entries for G
-    ijs = collections.deque()
-    vals = collections.deque()
-    # The diagonal mass matrix.
-    mass = collections.deque()
-    # The diagonal skip matrix.
-    S_diag = collections.deque()
+    # Gradient matrix
+    gOnes = numpy.ones(num_Grow + num_Gcol)
+    vals = numpy.append(-gOnes, gOnes)
+    del gOnes
 
-    def ij2index(i, j):
-        assert i >= 0 and i < rows and j >= 0 and j < cols
-        return i * cols + j
+    gColRange = numpy.arange(rows * cols)
+    gColRange = gColRange[~(gColRange % cols == (cols - 1))]
+    colJ = numpy.concatenate([
+        numpy.arange(num_Grow),
+        gColRange,
+        numpy.arange(cols, num_Grow + cols),
+        gColRange + 1])
+    del gColRange
 
-    output_row = 0
-    # First make the derivatives in the +row direction.
-    for i in range(rows - 1):
-        for j in range(cols):
-            print_progress(rowcol_to_index(i, j, cols) / (2 * rows * cols))
+    # Skip matrix
+    if(skip is not None):
+        S_diag = numpy.append(
+            skip[:-1] & skip[1:], skip[:, :-1] & skip[:, 1:]).astype(int)
+    else:
+        S_diag = numpy.ones(num_Grow + num_Gcol)
 
-            # Skip rows involving masked elements.
-            if mask is not None and not (mask[i, j] and mask[i + 1, j]):
-                continue
-            if skip is not None and not (skip[i, j] and skip[i + 1, j]):
-                S_diag.append(0.)
-            else:
-                S_diag.append(1.)
+    # Mass diagonal matrix
+    if(mask is not None):
+        m = numpy.zeros((rows - 1, cols))
+        m[:, 1:][mask[:-1, :-1] & mask[1:, :-1]] += 0.125
+        m[:, :-1][mask[:-1, 1:] & mask[1:, 1:]] += 0.125
+        mass = m.flatten()
+        m = numpy.zeros((rows, cols - 1))
+        m[1:][mask[:-1, :-1] & mask[:-1, 1:]] += 0.125
+        m[:-1][mask[1:, :-1] & mask[1:, 1:]] += 0.125
+        mass = numpy.append(mass, m)
+    else:
+        m = numpy.hstack([numpy.full((rows - 1, 1), 0.125),
+                          numpy.full((rows - 1, cols - 2), 0.25),
+                          numpy.full((rows - 1, 1), 0.125)])
+        mass = m.flatten()
+        m = numpy.vstack([numpy.full((1, cols - 1), 0.125),
+                          numpy.full((rows - 2, cols - 1), 0.25),
+                          numpy.full((1, cols - 1), 0.125)])
+        mass = numpy.append(mass, m.flatten())
+    del m
+    output_row = num_Grow + num_Gcol
 
-            ijs.append((output_row, ij2index(i, j)))
-            vals.append(-1)
+    if(mask is not None):
+        keep_rows = numpy.append(numpy.logical_and(mask[:-1], mask[1:]),
+            numpy.logical_and(mask[:, :-1], mask[:, 1:]))
+        tiled_keep_rows = numpy.tile(keep_rows, 2)
+        vals = vals[tiled_keep_rows]
+        colJ = colJ[tiled_keep_rows]
+        S_diag = S_diag[keep_rows]
+        mass = mass[keep_rows]
+        output_row = numpy.count_nonzero(keep_rows)
 
-            ijs.append((output_row, ij2index(i + 1, j)))
-            vals.append(1)
+    # rowI is dependent on the number of output rows.
+    rowI = numpy.tile(numpy.arange(output_row), 2)
 
-            # The mass is 0.25 for a non-boundary edge and 0.125 for a boundary
-            # edge.
-            # mass.append(0.25 if (j > 0 and j < cols-1) else 0.125)
-            # UPDATE: It's a little more complicated with a mask, since
-            #         internal edges can be boundary edges.
-            m = 0.0
-            if j > 0 and (
-                    mask is None or (mask[i, j - 1] and mask[i + 1, j - 1])):
-                m += 0.125
-            if j < cols - 1 and (
-                    mask is None or (mask[i, j + 1] and mask[i + 1, j + 1])):
-                m += 0.125
-            mass.append(m)
-
-            output_row += 1
-    # Next make the derivatives in the +col direction.
-    for i in range(rows):
-        for j in range(cols - 1):
-            print_progress(rowcol_to_index(i, j, cols) / (2 * rows * cols) +
-                0.5)
-
-            # Skip rows involving masked elements.
-            if mask is not None and not (mask[i, j] and mask[i, j + 1]):
-                continue
-            if skip is not None and not (skip[i, j] and skip[i, j + 1]):
-                S_diag.append(0.)
-            else:
-                S_diag.append(1.)
-
-            ijs.append((output_row, ij2index(i, j)))
-            vals.append(-1)
-
-            ijs.append((output_row, ij2index(i, j + 1)))
-            vals.append(1)
-
-            # The mass is 1/4 for a non-boundary edge and 1/8 for a
-            # boundary edge.
-            # mass.append(0.25 if (i > 0 and i < rows-1) else 0.125)
-            # UPDATE: It's a little more complicated with a mask, since
-            #         internal edges can be boundary edges.
-            m = 0.0
-            if i > 0 and (
-                    mask is None or (mask[i - 1, j] and mask[i - 1, j + 1])):
-                m += 0.125
-            if i < rows - 1 and (
-                    mask is None or (mask[i + 1, j] and mask[i + 1, j + 1])):
-                m += 0.125
-            mass.append(m)
-
-            output_row += 1
-
-    assert len(ijs) == len(vals)
-    assert len(mass) == output_row
-
-    # Faster
-    """
-    # Allocate space for a coo matrix entries for G. There are two non-zeros
-    # per row of G.
-    ijs = empty(((num_Grow + num_Gcol)*2, 2), dtype = int)
-    vals = empty((num_Grow + num_Gcol)*2, dtype = float)
-
-    # Also allocate space for the diagonal mass matrix.
-    mass = empty(num_Grow + num_Gcol, dtype = float)
-
-    # First make the derivatives in the +row direction.
-    # The pattern of -1 and 1 is very regular. The diagonal is -1 and the 1 is
-    # offset from the diagonal by cols.
-    vals[: num_Grow] = -1
-    vals[num_Grow : 2*num_Grow] = 1
-    ijs[: num_Grow, :] = arange(num_Grow)
-    ijs[num_Grow : 2*num_Grow, 0] = arange(num_Grow)
-    ijs[num_Grow : 2*num_Grow, 1] = arange(num_Grow) + cols
-    mass[...] = ?
-    """
-
-    # Assert all indices in the G matrix are within the range I expect them to
-    # be.
-    assert all([0 <= i < output_row and 0 <= j < rows * cols for i, j in ijs])
-
-    G = sparse.coo_matrix((vals, asarray(ijs).T),
-                        shape = (output_row, rows * cols))
+    G = sparse.coo_matrix((vals, (rowI, colJ)),
+        shape=(output_row, rows * cols))
     assert G.shape == (output_row, rows * cols)
 
-    # M = sparse.coo_matrix((mass, (range(output_row), range(output_row))))
     M = coo_diag(mass)
     assert M.shape == (output_row, output_row)
 
@@ -250,10 +197,8 @@ def dirichlet_energy(rows, cols, y, mask = None, skip = None):
     assert rows > 0 and cols > 0
 
     G, M, S = grad_and_mass(rows, cols, mask, skip)
+    G, M, S = G.tocsc(), M.tocsc(), S.tocsc()
 
-    # Divide by the sum of the Mass matrix
-    # TODO: Should multiply all edges by N
-    # M_sum = float(M.sum())
     L  = (G.T.dot(M.dot(G)))
     Lp = G.T.dot(S.dot(M.dot(G)))
 
@@ -262,8 +207,22 @@ def dirichlet_energy(rows, cols, y, mask = None, skip = None):
 
 
 def coo_diag(vals):
-    indices = arange(len(vals))
+    try:
+        indices = arange(vals.shape[0])
+    except:
+        indices = arange(len(vals))
     return sparse.coo_matrix((vals, (indices, indices)))
+
+
+def test_against_dirichlet():
+    print('=== test_against_dirichlet() ===')
+
+    import dirichlet_old
+    for rows, cols in [(2, 2), (2, 3), (3, 2), (30, 2), (2, 30), (3, 3),
+                       (30, 30)]:
+        print(rows, 'rows by', cols, 'cols:', (
+            abs(dirichlet_old.gen_symmetric_grid_laplacian2(rows, cols) -
+                gen_symmetric_grid_laplacian(rows, cols))).sum())
 
 
 def test_mask():
@@ -285,7 +244,8 @@ def test_mask():
     print(4 * L.diagonal().reshape(shape))
 
 if __name__ == '__main__':
-    test_mask()
+    # test_against_dirichlet()
+    # test_mask()
     sizes = [(4, 4, 1), (10, 10, 1), (100, 100, 1), (1000, 1000, 1)]
     for size in sizes:
         print("Texture Size: %s" % (size,))
@@ -301,4 +261,4 @@ if __name__ == '__main__':
         # import pdb; pdb.set_trace()
         coeff = dirichlet_energy(height, width, inTex)
         from seam_minimizer import display_quadratic_energy
-        display_quadratic_energy(coeff, diriTex, "Dirichlet")
+        display_quadratic_energy(coeff, inTex, diriTex, "Dirichlet")

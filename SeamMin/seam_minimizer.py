@@ -139,21 +139,21 @@ def compute_energies(mesh, texture, sv_method=SeamValueMethod.NONE):
 
     SG = seam_gradient.E_total(mesh, seam, width, height, depth, edge_lens)
 
-    bag_of_edges = ([edge for edgepair in seam for edge in edgepair] +
+    bag_of_F_edges = ([edge for edgepair in seam for edge in edgepair] +
         boundary + foldovers)
 
-    SV = SeamValueMethod.compute_energy(sv_method, mesh, bag_of_edges, width,
+    SV = SeamValueMethod.compute_energy(sv_method, mesh, bag_of_F_edges, width,
         height, textureVec)
 
     # All edges unsorted
-    bag_of_edges = ([edge for edgepair in uv_seam for edge in edgepair] +
+    bag_of_UV_edges = ([edge for edgepair in uv_seam for edge in edgepair] +
         uv_boundary + uv_foldovers)
 
     # Constrain the values
     print("Building Least Squares Constraints")
-    lsq_mask = mask_inside_seam(mesh, bag_of_edges, width, height)
+    lsq_mask = mask_inside_seam(mesh, bag_of_UV_edges, width, height)
 
-    lsq1_mask = mask_seam(mesh, bag_of_edges, width, height)
+    lsq1_mask = mask_seam(mesh, bag_of_UV_edges, width, height)
     LSQ1 = lsq_constraints.constrain_values(lsq1_mask, textureVec)
 
     lsq2_mask = lsq_mask ^ lsq1_mask

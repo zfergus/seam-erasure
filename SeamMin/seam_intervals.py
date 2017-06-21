@@ -17,7 +17,7 @@ def compute_edge_intervals(edge, width, height):
     v1 = UV_to_XY(edge[1], width, height)
 
     # Create expressions for converting to t values
-    x1_x0 = (float)(v1.x - v0.x)
+    x1_x0 = float(v1.x - v0.x)
 
     def x_to_t(x):
         """
@@ -25,7 +25,7 @@ def compute_edge_intervals(edge, width, height):
         """
         return round((x - v0.x) / (x1_x0), 10)
 
-    y1_y0 = (float)(v1.y - v0.y)
+    y1_y0 = float(v1.y - v0.y)
 
     def y_to_t(y):
         """

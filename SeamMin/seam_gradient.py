@@ -58,7 +58,7 @@ def inside_perpendicular_vector(mesh, edge):
     else:
         perp = numpy.array([vec[1], -vec[0]])
     length = float(numpy.linalg.norm(perp))
-    return perp / length if abs(length) > 1e-8 else perp
+    return (perp / length) if (abs(length) > 1e-8) else perp
 
 
 def E_ab(a, b, mesh, edgePair, width, height):
@@ -72,7 +72,7 @@ def E_ab(a, b, mesh, edgePair, width, height):
         Returns the energy coefficient matrix for the interval.
     """
 
-    # Get the UV lilrdinates of the edge pair, swaping endpoints of one edge
+    # Get the UV coordinates of the edge pair, swaping endpoints of one edge
     ((uv0, uv1), (uv1p, uv0p)) = [[mesh.vt[mesh.f[edge[0]][i].vt]
         for i in edge[1]] for edge in edgePair]
 
