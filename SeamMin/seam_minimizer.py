@@ -26,7 +26,7 @@ import seam_value_energy_lerp
 from texture import save_texture
 from util import *
 
-energies_str = "BLE, SV, SG, LSQ, LSQ1, LSQ2, L"
+energies_str = "BLE, SV, SG, LSQ, L"
 Energies = recordclass("Energies", energies_str)
 
 
@@ -152,26 +152,18 @@ def compute_energies(mesh, texture, sv_method=SeamValueMethod.NONE):
     # Constrain the values
     print("Building Least Squares Constraints")
     lsq_mask = mask_inside_seam(mesh, bag_of_UV_edges, width, height)
-
-    lsq1_mask = mask_seam(mesh, bag_of_UV_edges, width, height)
-    LSQ1 = lsq_constraints.constrain_values(lsq1_mask, textureVec)
-
-    lsq2_mask = lsq_mask ^ lsq1_mask
-    LSQ2 = lsq_constraints.constrain_values(lsq2_mask, textureVec)
-
-    LSQ = QuadEnergy(LSQ1.Q + LSQ2.Q, LSQ1.L + LSQ2.L, LSQ1.C + LSQ2.C)
-    del lsq1_mask, lsq2_mask
+    LSQ = lsq_constraints.constrain_values(lsq_mask, textureVec)
     print("Done\n")
 
     # Construct a dirichlet energy for the texture.
     print("Building Dirichlet Energy")
-    dirichlet_mask = mask_inside_faces(
-        mesh, width, height, init_mask=~lsq_mask)
+    dirichlet_mask = mask_inside_faces(mesh, width, height,
+        init_mask=~lsq_mask)
     L = dirichlet.dirichlet_energy(height, width, textureVec, ~dirichlet_mask,
         lsq_mask)
     print("Done\n")
 
-    return Energies(BLE=BLE, SV=SV, SG=SG, LSQ=LSQ, LSQ1=LSQ1, LSQ2=LSQ2, L=L)
+    return Energies(BLE=BLE, SV=SV, SG=SG, LSQ=LSQ, L=L)
 
 
 def solve_seam(mesh, texture, display_energy_file=None,
@@ -185,8 +177,7 @@ def solve_seam(mesh, texture, display_energy_file=None,
 
     # Get the coefficients for the quadratic energies.
     energies = compute_energies(mesh, texture, sv_method)
-    # exec(energies_str + " = energies")
-    BLE, SV, SG, LSQ, LSQ1, LSQ2, L = energies # WARNING: Do not change order
+    BLE, SV, SG, LSQ, L = energies # WARNING: Do not change orde
 
     print("Solving for minimal energy solution")
     sys.stdout.flush()
