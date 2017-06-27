@@ -150,9 +150,9 @@ FindSeam.find_seam = function find_seam(mesh){
     var directed_position_edge2face_position_index = {};
     for(var fi = 0; fi < face_position_indices.length; fi++){
         var face = face_position_indices[fi];
-        directed_position_edge2face_position_index[[face[0], face[1]]] = [fi, [0, 1]];
-        directed_position_edge2face_position_index[[face[1], face[2]]] = [fi, [1, 2]];
-        directed_position_edge2face_position_index[[face[2], face[0]]] = [fi, [2, 0]];
+        directed_position_edge2face_position_index[JSON.stringify([face[0], face[1]])] = [fi, [0, 1]];
+        directed_position_edge2face_position_index[JSON.stringify([face[1], face[2]])] = [fi, [1, 2]];
+        directed_position_edge2face_position_index[JSON.stringify([face[2], face[0]])] = [fi, [2, 0]];
     }
 
     // First find all undirected position edges (collect a canonical orientation
@@ -160,13 +160,12 @@ FindSeam.find_seam = function find_seam(mesh){
     var keys = Object.keys(directed_position_edge2face_position_index);
     var undirected_position_edges = new Set();
     for(var i = 0; i < keys.length; i++){
-        var ij = JSON.parse("[" + keys[i] + "]");
+        var ij = JSON.parse(keys[i]);
         var minIJ = Math.min(ij[0], ij[1]);
         var maxIJ = Math.max(ij[0], ij[1]);
-        undirected_position_edges.add(""+[minIJ, maxIJ]);
+        undirected_position_edges.add(JSON.stringify([minIJ, maxIJ]));
     }
-    undirected_position_edges = Array.from(undirected_position_edges).map(
-        pair => JSON.parse("[" + pair + "]"));
+    undirected_position_edges = Array.from(undirected_position_edges).map(JSON.parse);
 
     // Now we will iterate over all position edges.
     // Seam edges are the edges whose two opposite directed edges have different

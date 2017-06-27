@@ -29,11 +29,11 @@ Mask.get_all_surrounding_pixels = function get_all_surrounding_pixels(edges, wid
             var a = intervals[j], b = intervals[j + 1];
             var uv_mid = lerp_UV((a + b) / 2.0, edge[0], edge[1])
             surrounding_pixels(uv_mid, width, height, "array").forEach(
-                p => pixels.add("" + p));
+                p => pixels.add(JSON.stringify(p)));
         }
     }
 
-    return Array.from(pixels).map(p => JSON.parse("[" + p + "]"));
+    return Array.from(pixels).map(JSON.parse);
 }
 
 

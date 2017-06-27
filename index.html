@@ -34,7 +34,6 @@
             console.log(objfile);
             var texfile = document.getElementById("tex-input").files[0];
             console.log(texfile);
-            // readSingleFile(objfile);
             if (objfile) {
                 var reader = new FileReader();
                 reader.onload = function(e) {
@@ -60,35 +59,11 @@
                     //         console.log(msg);
                     //     }
                     // }
-                    // myWorker.postMessage({'id': 'input', 'fname': objfile.name,
-                    //     'objFile': contents});
+                    // myWorker.postMessage({'id': 'input', 'objFile': contents,
+                    //     'texture':JSON.stringify(texture)});
                 };
                 reader.readAsText(objfile);
             }
-        }
-
-        function readSingleFile(file) {
-        //   var file = e.target.files[0];
-            if (!file) {
-                return;
-            }
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                var contents = e.target.result;
-                var mesh = OBJReader.quads_to_triangles(
-                    OBJReader.parse_obj(contents.split("\n"), file.name));
-                var rows = 1000, cols = 1000, depth = 3
-                var texture = numeric.ones([rows, cols, depth]);
-                var out = SeamMinimizer.solve_seam(mesh, texture);
-                console.log(numeric.reshape(out, [rows, cols, depth]));
-                //displayContents(contents);
-            };
-            reader.readAsText(file);
-        }
-
-        function displayContents(contents) {
-            var element = document.getElementById('file-content');
-            element.innerHTML = contents;
         }
     </script>
 </head>
@@ -132,7 +107,7 @@
         <br>
         <!-- <input type="submit" value="Submit" onclick="minimize();"/> -->
     </form>
-    <button onclick="minimize();">Click Me!</button><br>
+    <button onclick="minimize();">Submit</button><br>
     <h2>Output:</h2>
     <div id="output"></div>
 </body>

@@ -1,18 +1,18 @@
 const USING_WORKER = true;
 
-function minimize(file_name, obj_contents) {
-//   var file = e.target.files[0];
+function minimize(obj_contents, texture) {
     var mesh = OBJReader.quads_to_triangles(
-        OBJReader.parse_obj(obj_contents.split("\n"), file_name));
-    var rows = 100, cols = 100, depth = 3
-    var texture = numeric.ones([rows, cols, depth]);
+        OBJReader.parse_obj(obj_contents.split("\n"), ""));
+    var dims = numeric.dim(texture).concat(1);
+    var nRows = dims[0], nCols = dims[1], depth = dim[2];
+
     var out = SeamMinimizer.solve_seam(mesh, texture);
-    console.log(numeric.reshape(out, [rows, cols, depth]));
+    console.log(numeric.reshape(out, [nRows, nCols, depth]));
 }
 
 self.onmessage = function(msg){
     if(msg.data.id === "input"){
-        minimize(msg.data.fname, msg.data.objFile);
+        minimize(msg.data.objFile, JSON.parse(msg.data.texture));
     }
     else{
         console.log(msg);
