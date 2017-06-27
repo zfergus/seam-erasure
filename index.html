@@ -1,5 +1,7 @@
 <html>
 <head>
+     <meta charset="UTF-8">
+
     <link rel="stylesheet" type="text/css" href="./static/styles/theme.css">
     <script src="./js/lib/numeric-1.2.6.js"></script>
     <script src="./js/lib/parallel.js"></script>
@@ -20,14 +22,49 @@
     <script src="./js/util.js"></script>
 
     <script>
+        "use strict";
         function minimize()
         {
+            var outputEl = document.getElementById("output");
+            if(outputEl !== null){
+                outputEl.innerHTML = "";
+            }
             console.log("Minimizing Texture");
             var objfile = document.getElementById("obj-input").files[0];
             console.log(objfile);
             var texfile = document.getElementById("tex-input").files[0];
             console.log(texfile);
-            readSingleFile(objfile);
+            // readSingleFile(objfile);
+            if (objfile) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var contents = e.target.result;
+                    var obj_contents = contents;
+                    var mesh = OBJReader.quads_to_triangles(
+                        OBJReader.parse_obj(obj_contents.split("\n")));
+                    var rows = 100, cols = 100, depth = 3
+                    var texture = numeric.ones([rows, cols, depth]);
+                    var out = SeamMinimizer.solve_seam(mesh, texture);
+                    console.log(numeric.reshape(out, [rows, cols, depth]));
+                    // var myWorker = new Worker('./seam-min-worker.min.js');
+                    // myWorker.onmessage = function(msg){
+                    //     if(msg.data.id === 'output'){
+                    //         var str = msg.data.out_str;
+                    //         var outputEl = document.getElementById("output");
+                    //         if(outputEl !== null){
+                    //             outputEl.innerHTML += str.replace("\n", "<br>") + "<br>";
+                    //         }
+                    //         console.log(str);
+                    //     }
+                    //     else{
+                    //         console.log(msg);
+                    //     }
+                    // }
+                    // myWorker.postMessage({'id': 'input', 'fname': objfile.name,
+                    //     'objFile': contents});
+                };
+                reader.readAsText(objfile);
+            }
         }
 
         function readSingleFile(file) {
@@ -40,8 +77,10 @@
                 var contents = e.target.result;
                 var mesh = OBJReader.quads_to_triangles(
                     OBJReader.parse_obj(contents.split("\n"), file.name));
-                var texture = numeric.ones([10, 10, 3]);
-                console.log(SeamMinimizer.solve_seam(mesh, texture));
+                var rows = 1000, cols = 1000, depth = 3
+                var texture = numeric.ones([rows, cols, depth]);
+                var out = SeamMinimizer.solve_seam(mesh, texture);
+                console.log(numeric.reshape(out, [rows, cols, depth]));
                 //displayContents(contents);
             };
             reader.readAsText(file);
@@ -91,9 +130,10 @@
             <input type="checkbox" name="data" value="data">Data file</input><br>
         </div>
         <br>
-
-        <input type="submit" value="Submit" onclick="minimize();"/>
+        <!-- <input type="submit" value="Submit" onclick="minimize();"/> -->
     </form>
-    <button onclick="minimize();">Click Me!</button>
+    <button onclick="minimize();">Click Me!</button><br>
+    <h2>Output:</h2>
+    <div id="output"></div>
 </body>
 </html>

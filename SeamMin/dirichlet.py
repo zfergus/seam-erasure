@@ -132,8 +132,8 @@ def grad_and_mass(rows, cols, mask = None, skip = None):
     output_row = num_Grow + num_Gcol
 
     if(mask is not None):
-        keep_rows = numpy.append(numpy.logical_and(mask[:-1], mask[1:]),
-            numpy.logical_and(mask[:, :-1], mask[:, 1:]))
+        keep_rows = numpy.append(mask[:-1] & mask[1:],
+            mask[:, :-1] & mask[:, 1:])
         tiled_keep_rows = numpy.tile(keep_rows, 2)
         vals = vals[tiled_keep_rows]
         colJ = colJ[tiled_keep_rows]

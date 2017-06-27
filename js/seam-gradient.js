@@ -179,7 +179,7 @@ SeamGradient.E_total = function E_total(mesh, seam, width, height, depth, edge_l
     Output:
         Returns the quadtratic term matrix for the seam gradient.
     */
-    console.log("Building Seam Gradient Matrix:");
+    log_output("Building Seam Gradient Matrix:");
 
     // Sum up the energy coefficient matrices for all the edge pairs
     var N = width * height;
@@ -197,7 +197,6 @@ SeamGradient.E_total = function E_total(mesh, seam, width, height, depth, edge_l
     E = E.total(N, N);
 
     print_progress(1.0);
-    console.log("\n")
 
     // Divide by the total edge length in 3D
     return QuadEnergy(numeric.ccsdiv(E, sum_edge_lens),

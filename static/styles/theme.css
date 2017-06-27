@@ -1,6 +1,8 @@
 body {
     background-color: #2A3132;
     color: white;
+    margin-left:20%;
+    margin-right:20%;
 }
 
 label {
@@ -8,25 +10,23 @@ label {
     font-weight: bold;
 }
 
+#output{
+    background-color: #D2B48C;
+    font-family: "Lucida Console", "Courier New";
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 2.5%;
+    color: black;
+}
+
 h1 {
     margin: 20px;
-    margin-left:10%;
-    margin-right: 10%;
+    margin-left:-10%;
+    margin-right: -10%;
     padding-bottom: 10px;
     text-align: center;
     border-bottom-width: medium;
     border-bottom-style: solid;
-}
-
-form {
-    margin-left:20%;
-    margin-right:20%;
-}
-
-
-body > p {
-    margin-left:20%;
-    margin-right:20%;
 }
 
 [data-tip] {

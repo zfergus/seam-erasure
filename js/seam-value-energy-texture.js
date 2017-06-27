@@ -100,7 +100,7 @@ SVETexture.E_total = function E_total(mesh, edges, width, height, textureVec){
     Output:
         QuadEnergy for the total seam value energy.
     */
-    console.log("Building Seam Value Energy Matrix:");
+    log_output("Building Seam Value Energy Matrix:");
 
     // Sum up the energy coefficient matrices for all the edge pairs
     var N = width * height;
@@ -126,7 +126,7 @@ SVETexture.E_total = function E_total(mesh, edges, width, height, textureVec){
     E = E.total(N, N);
 
     print_progress(1.0);
-    console.log("\n");
+    log_output("\n");
 
     // Divide by the total edge length in 3D
     var Q = numeric.ccsdiv(E, sum_edge_lens);

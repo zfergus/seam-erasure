@@ -183,7 +183,7 @@ function range_min_max(a, b){
 
 
 function round(value, decimals) {
-  return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+    return Number(value.toFixed(decimals));
 }
 
 
@@ -193,7 +193,27 @@ function print_progress(percent){
     Given value should be a decimal in range [0, 1].
     */
     var out_str = "\r" + round(percent * 100, 2) + "%";
-    console.log(out_str);
+    log_output(out_str);
+}
+
+function log_output(str, useConsole){
+    if(useConsole){
+        console.log(str);
+    }
+    else if(typeof(USING_WORKER) !== "undefined"){
+        self.postMessage({'id': 'output', 'out_str': str});
+        // console.log(str);
+    }
+    else{
+        var outputEl = document.getElementById("output");
+        if(outputEl !== null){
+            if(outputEl.innerHTML === ""){
+                outputEl.innerHTML = "<h3>Output:</h3>"
+            }
+            outputEl.innerHTML += str.replace("\n", "<br>") + "<br>";
+        }
+        console.log(str);
+    }
 }
 
 

@@ -129,7 +129,7 @@ SVELerp.E_total = function E_total(mesh, edges, width, height){
     Output:
         Returns the quadtratic term matrix for the seam value energy.
     */
-    console.log("Building Seam Value of Lerp Energy Matrix:");
+    log_output("Building Seam Value of Lerp Energy Matrix:");
 
     // Check the model contains vertex colors.
     if(len(mesh.vc) != len(mesh.v)){
@@ -167,7 +167,7 @@ SVELerp.E_total = function E_total(mesh, edges, width, height){
     C = numeric.ccsdic(C.total(depth, depth), sum_edge_lens);
 
     print_progress(1.0);
-    console.log("\n");
+    log_output("\n");
 
     // Divide by the total edge length in 3D
     return QuadEnergy(Q, L, C);

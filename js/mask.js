@@ -133,7 +133,6 @@ Mask.mask_inside_seam = function mask_inside_seam(mesh, seam_edges, width, heigh
     mask = numeric.sub(full, mask);
 
     print_progress(1.0);
-    console.log("\n");
     return numeric.not(mask)
 }
 
@@ -199,6 +198,5 @@ Mask.mask_inside_faces = function mask_inside_faces(mesh, width, height, init_ma
     }
 
     print_progress(1.0);
-    console.log("\n");
     return numeric.not(mask);
 }

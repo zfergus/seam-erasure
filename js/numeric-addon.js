@@ -130,6 +130,14 @@ numeric.ccsHStack = function ccsHStack(A, B, nRows, nColsA, nColsB){
 }
 
 numeric.ccsSolveMatrix = function ccsSolveMatrix(A, B){
+    var solving = true;
+    let foo = function(){
+        if(solving){
+            console.log('.');
+            setTimeout(foo, 100);
+        }
+    }
+    foo();
     var LUP = numeric.ccsLUP(A);
     var dims = numeric.ccsDim(B);
     var nRows = dims[0], nCols = dims.length > 1 ? dims[1] : 1;
@@ -143,5 +151,6 @@ numeric.ccsSolveMatrix = function ccsSolveMatrix(A, B){
             sol = numeric.ccsHStack(sol, solCol, nRows, j, 1);
         }
     }
+    solving = false;
     return sol;
 }

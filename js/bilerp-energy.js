@@ -166,7 +166,7 @@ BilerpEnergy.E_edgePair = function E_edgePair(edgePair, width, height, edge_len)
 
 BilerpEnergy.E_total = function E_total(seam, width, height, depth, edge_lens){
     /* Calculate the energy coeff matrix for a width x height texture. */
-    console.log("Building Bilinear Energy Matrix:");
+    log_output("Building Bilinear Energy Matrix:");
 
     // Sum up the energy coefficient matrices for all the edge pairs
     var N = width * height;
@@ -184,7 +184,6 @@ BilerpEnergy.E_total = function E_total(seam, width, height, depth, edge_lens){
     E = E.total(N, N)
 
     print_progress(1.0);
-    console.log("\n");
 
     // Divide by the total edge length in 3D
     return QuadEnergy(numeric.ccsdiv(E, sum_edge_lens),

@@ -23,7 +23,7 @@ SeamValueMethod.LERP = 2;
 
 SeamValueMethod.compute_energy = function compute_energy(method, mesh, edges, width, height, textureVec){
     if(method === SeamValueMethod.NONE){
-        console.log("=== Not using Seam Value Energy ===\n");
+        log_output("=== Not using Seam Value Energy ===\n");
         return undefined;
     }
     else if(method === SeamValueMethod.TEXTURE){
@@ -105,25 +105,27 @@ SeamMinimizer.compute_energies = function compute_energies(mesh, texture, sv_met
         }
     }
 
-    console.log("Finding seam of model");
+    log_output("Finding seam of model");
     var sbf = FindSeam.find_seam(mesh);
     var seam = sbf[0], boundary = sbf[1], foldovers = sbf[2];
     var uv_sbf = FindSeam.seam_to_UV(mesh, seam, boundary, foldovers);
     var uv_seam = uv_sbf[0], uv_boundary = uv_sbf[1], uv_foldovers = uv_sbf[2];
-    console.log("Done")
+    log_output("Done\n")
 
-    console.log("Number of edges along the seam: " + (seam.length * 2));
-    console.log("Number of edges along the boundary: " + boundary.length);
-    console.log("Number of foldover edges: " + foldovers.length);
+    log_output("Number of edges along the seam: " + (seam.length * 2));
+    log_output("Number of edges along the boundary: " + boundary.length);
+    log_output("Number of foldover edges: " + foldovers.length + "\n");
 
-    console.log("Computing seam edge lengths");
+    log_output("Computing seam edge lengths");
     var edge_lens = compute_seam_lengths(mesh, seam);
-    console.log("Done");
+    log_output("Done\n");
 
     // Calculate the energy coeff matrix
     var BLE = BilerpEnergy.E_total(uv_seam, width, height, depth, edge_lens);
+    log_output("");
 
     var SG = SeamGradient.E_total(mesh, seam, width, height, depth, edge_lens);
+    log_output("");
 
     var bag_of_F_edges = [];
     seam.forEach(edgePair => edgePair.forEach(
@@ -140,18 +142,19 @@ SeamMinimizer.compute_energies = function compute_energies(mesh, texture, sv_met
     bag_of_UV_edges = bag_of_UV_edges.concat(uv_boundary, uv_foldovers);
 
     // Constrain the values
-    console.log("Building Least Squares Constraints");
+    log_output("Building Least Squares Constraints:");
     var lsq_mask = Mask.mask_inside_seam(mesh, bag_of_UV_edges, width, height);
     var LSQ = LSQConstraints.constrain_values(lsq_mask, textureVec);
-    console.log("Done");
+    log_output("");
 
     // Construct a dirichlet energy for the texture.
-    console.log("Building Dirichlet Energy");
+    log_output("Building Dirichlet Energy Mask:");
     var dirichlet_mask = Mask.mask_inside_faces(mesh, width, height,
         numeric.not(lsq_mask));
+    log_output("\nBuilding Dirichlet Energy:");
     var L = Dirichlet.dirichlet_energy(height, width, textureVec,
         numeric.not(dirichlet_mask), lsq_mask);
-    console.log("Done");
+    log_output("");
 
     return Energies(BLE, SV, SG, LSQ, L);
 }
@@ -179,7 +182,7 @@ SeamMinimizer.solve_seam = function solve_seam(mesh, texture, sv_method, do_glob
     var BLE = energies.BLE, SV = energies.SV, SG = energies.SG,
         LSQ = energies.LSQ, L = energies.L;
 
-    console.log("Solving for minimal energy solution");
+    log_output("Solving for minimal energy solution");
 
     // Minimize energy with constraints (Quad * x = lin)
     // Weights in the order [bleW, svW, sgW, lsqW, diriW]
@@ -200,7 +203,7 @@ SeamMinimizer.solve_seam = function solve_seam(mesh, texture, sv_method, do_glob
 
     var solution = numeric.ccsSolveMatrix(quad, numeric.ccsmul(-1, lin));
 
-    console.log("Done");
+    log_output("Done\n");
 
     return numeric.ccsFull(solution);
 }

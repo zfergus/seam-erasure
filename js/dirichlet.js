@@ -64,6 +64,8 @@ Dirichlet.grad_and_mass = function grad_and_mass(rows, cols, mask, skip){
     Matrices returned are scipy.sparse matrices.
     */
 
+    print_progress(0)
+
     // The number of derivatives in the +row direction is cols * (rows - 1),
     // because the bottom row doesn't have them.
     var num_Grow = cols * (rows - 1);
@@ -71,98 +73,82 @@ Dirichlet.grad_and_mass = function grad_and_mass(rows, cols, mask, skip){
     // because the right-most column doesn't have them.
     var num_Gcol = rows * (cols - 1);
 
-    // coo matrix entries for G
-    var rowI = [], colJ = [], vals = [];
-    // The diagonal mass matrix.
-    var mass = [];
-    // The diagonal skip matrix.
-    var S_diag = [];
+    // Gradient matrix
+    var gOnes = numeric.ones([num_Grow + num_Gcol]);
+    var vals = numeric.mul(-1, gOnes).concat(gOnes)
 
-    var ij2index = function(i, j){ return i * cols + j; }
+    var gColRange = numeric.range(rows * cols);
+    gColRange = numeric.mask(gColRange, numeric.not(numeric.eq(
+        numeric.mod(gColRange, cols), cols - 1)))
+    var colJ = numeric.range(num_Grow).concat(gColRange,
+        numeric.range(cols, num_Grow + cols), numeric.add(gColRange, 1))
 
-    var output_row = 0;
-    // First make the derivatives in the +row direction.
-    for(var i = 0; i < rows - 1; i++){
-        for(var j = 0; j < cols; j++){
-            print_progress(rowcol_to_index(i, j, cols) / (2 * rows * cols));
-
-            // Skip rows involving masked elements.
-            if(mask !== undefined && !(mask[i][j] && mask[i + 1][j])){
-                continue;
-            }
-            if(skip !== undefined && !(skip[i][j] && skip[i + 1][j])){
-                S_diag.push(0.);
-            }
-            else{
-                S_diag.push(1.);
-            }
-
-            rowI.push(output_row);
-            colJ.push(ij2index(i, j));
-            vals.push(-1);
-
-            rowI.push(output_row);
-            colJ.push(ij2index(i + 1, j));
-            vals.push(1);
-
-            // The mass is 0.25 for a non-boundary edge and 0.125 for a boundary
-            // edge.
-            // mass.append(0.25 if (j > 0 and j < cols-1) else 0.125)
-            // UPDATE: It's a little more complicated with a mask, since
-            //         internal edges can be boundary edges.
-            var m = 0.0;
-            if(j > 0 && (mask === undefined || (mask[i][j - 1] && mask[i + 1][j - 1]))){
-                m += 0.125;
-            }
-            if(j < cols - 1 && (mask === undefined || (mask[i][j + 1] && mask[i + 1][j + 1]))){
-                m += 0.125;
-            }
-            mass.push(m)
-
-            output_row += 1;
-        }
+    // Skip matrix
+    if(skip !== undefined){
+        var S_diag = flatten2D(numeric.and(numeric.slice(skip, [':-1']),
+            numeric.slice(skip, ['1:'])));
+        S_diag = S_diag.concat(flatten2D(numeric.and(
+            numeric.slice(skip, [':', ':-1']),
+            numeric.slice(skip, [':', '1:']))));
+        S_diag = numeric.asNumbers(S_diag);
     }
-    // Next make the derivatives in the +col direction.
-    for(var i = 0; i < rows; i++){
-        for(var j = 0; j < cols - 1; j++){
-            print_progress(rowcol_to_index(i, j, cols) / (2 * rows * cols) + 0.5);
-
-            // Skip rows involving masked elements.
-            if(mask !== undefined && !(mask[i][j] && mask[i][j + 1])){
-                continue;
-            }
-            if(skip !== undefined && !(skip[i][j] && skip[i][j + 1])){
-                S_diag.push(0.);
-            }
-            else{
-                S_diag.push(1.);
-            }
-
-            rowI.push(output_row)
-            colJ.push(ij2index(i, j))
-            vals.push(-1)
-
-            rowI.push(output_row)
-            colJ.push(ij2index(i, j + 1))
-            vals.push(1)
-
-            // The mass is 1/4 for a non-boundary edge and 1/8 for a
-            // boundary edge.
-            // mass.append(0.25 if (i > 0 and i < rows-1) else 0.125)
-            // UPDATE: It's a little more complicated with a mask, since
-            //         internal edges can be boundary edges.
-            var m = 0.0;
-            if(i > 0 && (mask === undefined || (mask[i - 1][j] && mask[i - 1][j + 1]))){
-                m += 0.125;
-            }
-            if(i < rows - 1 && (mask === undefined || (mask[i + 1][j] && mask[i + 1][j + 1]))){
-                m += 0.125;
-            }
-            mass.push(m)
-
-            output_row += 1;
-        }
+    else{
+        var S_diag = numeric.ones([num_Grow + num_Gcol]);
     }
+
+    // Mass diagonal matrix
+    if(mask !== undefined){
+        let m = numeric.zeros([rows - 1, cols]);
+        for(var i = 0; i < rows-1; i++){
+            for(var j = 0; j < cols; j++){
+                if(j > 0 && mask[i][j - 1] && mask[i + 1][j - 1]){
+                    m[i, j] += 0.125;
+                }
+                if(j < cols - 1 && mask[i][j + 1] && mask[i + 1][j + 1]){
+                    m[i, j] += 0.125;
+                }
+            }
+        }
+        mass = flatten2D(m);
+        m = numeric.zeros([rows, cols - 1]);
+        for(var i = 0; i < rows; i++){
+            for(var j = 0; j < cols-1; j++){
+                if(i > 0 && mask[i - 1][j] && mask[i - 1][j + 1]){
+                    m[i, j] += 0.125;
+                }
+                if(i < rows - 1 && mask[i + 1][j] && mask[i + 1][j + 1]){
+                    m[i, j] += 0.125;
+                }
+            }
+        }
+        mass = mass.concat(flatten2D(m));
+
+        let keep_rows = flatten2D(numeric.and(numeric.slice(mask, [':-1']),
+            numeric.slice(mask, ['1:'])))
+        keep_rows = keep_rows.concat(flatten2D(numeric.and(
+            numeric.slice(mask, [':', ':-1']), numeric.slice(mask, [':', '1:']))))
+        tiled_keep_rows = keep_rows.concat(keep_rows)
+        vals = numeric.mask(vals, tiled_keep_rows)
+        colJ = numeric.mask(colJ, tiled_keep_rows)
+        S_diag = numeric.mask(S_diag, keep_rows)
+        mass = numeric.mask(mass, keep_rows)
+        var output_row = numeric.sum(keep_rows)
+    }
+    else{
+        m = numeric.hstack([numeric.rep([rows - 1, 1], 0.125),
+                          numeric.rep([rows - 1, cols - 2], 0.25),
+                          numeric.rep([rows - 1, 1], 0.125)]);
+        mass = flatten2D(m);
+        m = numeric.vstack([numeric.rep([1, cols - 1], 0.125),
+                          numeric.rep([rows - 2, cols - 1], 0.25),
+                          numeric.rep([1, cols - 1], 0.125)]);
+        mass = mass.concat(flatten2D(m));
+        var output_row = num_Grow + num_Gcol;
+    }
+
+    // rowI is dependent on the number of output rows.
+    rowI = numeric.range(output_row)
+    rowI = rowI.concat(rowI);
 
     G = numeric.ccsScatterShaped([rowI, colJ, vals], output_row, rows * cols);
 
@@ -171,7 +157,6 @@ Dirichlet.grad_and_mass = function grad_and_mass(rows, cols, mask, skip){
     S = numeric.ccsDiag(S_diag, output_row, output_row);
 
     print_progress(1.0);
-    console.log("\n");
 
     return [G, M, S];
 }
