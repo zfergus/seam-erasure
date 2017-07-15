@@ -202,14 +202,16 @@ def solve_seam(mesh, texture, display_energy_file=None,
 
     try:
         # CVXOPT cholmod linsolve should be less memory intensive.
-        import cvxopt, cvxopt.cholmod
+        import cvxopt
+        import cvxopt.cholmod
         quad = quad.tocoo()
         system = cvxopt.spmatrix(quad.data, numpy.array(quad.row, dtype=int),
             numpy.array(quad.col, dtype=int))
         rhs = cvxopt.matrix(lin.A)
-        solution = cvxopt.cholmod.linsolve(system, rhs).x
+        cvxopt.cholmod.linsolve(system, rhs)
+        solution = numpy.array(rhs)
     except ImportError:
-        print('No cvxopt.cholmod, using scipy.sparse.linalg.spsolve()')
+        print('cvxopt.cholmod failed, using scipy.sparse.linalg.spsolve()')
         solution = scipy.sparse.linalg.spsolve(quad, -lin)
     finally:
         dot_process.terminate()

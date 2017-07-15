@@ -1,6 +1,8 @@
 <html>
 <head>
-     <meta charset="UTF-8">
+    <meta charset="UTF-8">
+
+    <title>Seam Erasure</title>
 
     <link rel="stylesheet" type="text/css" href="./static/styles/theme.css">
     <script src="./js/lib/numeric-1.2.6.js"></script>
@@ -41,7 +43,7 @@
                     var obj_contents = contents;
                     var mesh = OBJReader.quads_to_triangles(
                         OBJReader.parse_obj(obj_contents.split("\n")));
-                    var rows = 100, cols = 100, depth = 3
+                    var rows = 100, cols = 100, depth = 4
                     var texture = numeric.ones([rows, cols, depth]);
                     var out = SeamMinimizer.solve_seam(mesh, texture);
                     console.log(numeric.reshape(out, [rows, cols, depth]));
@@ -68,7 +70,7 @@
     </script>
 </head>
 <body>
-    <h1>Seam Minimization</h1>
+    <h1>Seam Erasure</h1>
     <!-- <form action="/minimized" method="post" enctype=multipart/form-data> -->
     <form action="">
         <label>OBJ Model:</label><br>

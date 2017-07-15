@@ -178,10 +178,10 @@ FindSeam.find_seam = function find_seam(mesh){
         var vp_edge = undirected_position_edges[i];
         // If it and its opposite exist as directed edges, check if their
         // texture coordinate indices match.
-        if(directed_position_edge2face_position_index.hasOwnProperty(vp_edge) &&
-            directed_position_edge2face_position_index.hasOwnProperty(vp_edge.slice().reverse())){
-            var forwards = directed_position_edge2face_position_index[vp_edge]
-            var backwards = directed_position_edge2face_position_index[vp_edge.slice().reverse()]
+        if(directed_position_edge2face_position_index.hasOwnProperty(JSON.stringify(vp_edge)) &&
+            directed_position_edge2face_position_index.hasOwnProperty(JSON.stringify(vp_edge.slice().reverse()))){
+            var forwards = directed_position_edge2face_position_index[JSON.stringify(vp_edge)]
+            var backwards = directed_position_edge2face_position_index[JSON.stringify(vp_edge.slice().reverse())]
 
             // If the texcoord indices are similarly flipped or the edges are
             // equivilant in UV-space.
@@ -207,10 +207,10 @@ FindSeam.find_seam = function find_seam(mesh){
         }
         // Otherwise, the edge and its opposite aren't both in the directed
         // edges. One of them should be.
-        else if(directed_position_edge2face_position_index.hasOwnProperty(vp_edge)){
+        else if(directed_position_edge2face_position_index.hasOwnProperty(JSON.stringify(vp_edge))){
             seam_mesh_boundary.push(directed_position_edge2face_position_index[vp_edge]);
         }
-        else if(directed_position_edge2face_position_index.hasOwnProperty(vp_edge.slice().reverse())){
+        else if(directed_position_edge2face_position_index.hasOwnProperty(JSON.stringify(vp_edge.slice().reverse()))){
             seam_mesh_boundary.push(directed_position_edge2face_position_index[vp_edge.slice().reverse()]);
         }
     }

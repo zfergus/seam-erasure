@@ -174,7 +174,7 @@ Mask.mask_inside_faces = function mask_inside_faces(mesh, width, height, init_ma
         var ur = [Math.max(...numeric.slice(face, [':', 0])),
             Math.max(...numeric.slice(face, [':', 1]))];
 
-        var bbox = numeric.vstack([ll, ur]);
+        var bbox = [ll, ur];
 
         var xRange = numeric.range(
             Math.max(0,     Math.floor(bbox[0][0])),
