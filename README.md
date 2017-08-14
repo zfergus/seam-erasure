@@ -45,7 +45,7 @@ python ./src/main.py path/to/input_model path/to/input_texture [-h] [-o path/to/
 
 ## Files
 
-* `server.py` - Flask based python code for handling web inputs.
+* `server.py` - Flask based Python code for handling web inputs.
 * `SeamErasure/` - Python package for Seam-Erasure
     * `SeamErasure/main.py` - Command-line interface for seam erasure.
 * `static/` - Static web page content including style sheets
