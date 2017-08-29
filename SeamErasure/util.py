@@ -69,7 +69,7 @@ def lerp_XY(t, xy0, xy1):
     Linearly interpolate between (x0,y0) and (x1,y1).
     Returns a XY object.
     """
-    return XY(*lerp_UV(t, xy0, xy1))
+    return XY(*lerpPair(t, xy0, xy1))
 
 
 def UV_to_XY(uv, width, height, is_clamped = False):
@@ -81,8 +81,8 @@ def UV_to_XY(uv, width, height, is_clamped = False):
     xy = XY(x = uv.u * width - 0.5, y = uv.v * height - 0.5)
 
     if is_clamped:
-        xy = XY(x = min(max(0, xy.x), max(0, width  - 2)),
-                y = min(max(0, xy.y), max(0, height - 2)))
+        xy = (numpy.clip(xy[0], 0, max(0, width  - 1)),
+              numpy.clip(xy[1], 0, max(0, height - 1)))
     return xy
 
 
@@ -97,7 +97,7 @@ def globalUV_to_local(uv, minX, minY, width, height):
     Local pixel values defined by the minimum x and y values.
     uv is defined in terms of GPU UV space.
     """
-    x, y = UV_to_XY(uv, width, height)
+    x, y = UV_to_XY(uv, width, height, True)
     return UV(u = x - minX, v = y - minY)
 
 
@@ -126,8 +126,8 @@ def surrounding_pixels(uv, w, h, as_index = False, as_tuple = False):
     (x, y) = UV_to_XY(uv, w, h, is_clamped = True)
 
     # Convert from XY to Pixel coordinates
-    px = int(min(max(0, math.floor(x)), w - 1)) # X in Range(0,w-1)
-    py = int(min(max(0, math.floor(y)), h - 1)) # Y in Range(0,h-1)
+    px = int(min(max(0, math.floor(x)), w - 2)) # X in Range(0,w-1)
+    py = int(min(max(0, math.floor(y)), h - 2)) # Y in Range(0,h-1)
 
     p00 = Pixel(x = px, y = py)
 
@@ -180,23 +180,23 @@ def print_clear_line(line_length = 80):
 
 
 # !!! These functions are not useful !!!
-def texUV_to_gpuUV(uv, width, height):
-    """ Convert from the Texture UV space to GPU/OpenGL UV space. """
-    u = uv.u - (uv.u / float(width)) + 0.5 / width
-    v = uv.v - (uv.v / float(height)) + 0.5 / height
-    return UV(u = u, v = v)
-
-
-def texSeam_to_gpuUV(seam, width, height):
-    """ Convert a texture seam to GPU/OpenGL UV space. """
-    gpu_seam = list()
-    for edgePair in seam:
-        gpu_edgePair = list()
-        for edge in edgePair:
-            gpu_edgePair.append(
-                [texUV_to_gpuUV(uv, width, height) for uv in edge])
-        gpu_seam.append(gpu_edgePair)
-    return gpu_seam
+# def texUV_to_gpuUV(uv, width, height):
+#     """ Convert from the Texture UV space to GPU/OpenGL UV space. """
+#     u = uv.u - (uv.u / float(width)) + 0.5 / width
+#     v = uv.v - (uv.v / float(height)) + 0.5 / height
+#     return UV(u = u, v = v)
+#
+#
+# def texSeam_to_gpuUV(seam, width, height):
+#     """ Convert a texture seam to GPU/OpenGL UV space. """
+#     gpu_seam = list()
+#     for edgePair in seam:
+#         gpu_edgePair = list()
+#         for edge in edgePair:
+#             gpu_edgePair.append(
+#                 [texUV_to_gpuUV(uv, width, height) for uv in edge])
+#         gpu_seam.append(gpu_edgePair)
+#     return gpu_seam
 
 
 def verts_equal(v0, v1, epsilon = 1e-8):

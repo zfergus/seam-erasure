@@ -210,8 +210,9 @@ def solve_seam(mesh, texture, display_energy_file=None,
         rhs = cvxopt.matrix(lin.A)
         cvxopt.cholmod.linsolve(system, rhs)
         solution = numpy.array(rhs)
-    except ImportError:
-        print('cvxopt.cholmod failed, using scipy.sparse.linalg.spsolve()')
+    except Exception as e:
+        print('cvxopt.cholmod failed,' +
+            'using scipy.sparse.linalg.spsolve(): %s' % e)
         solution = scipy.sparse.linalg.spsolve(quad, -lin)
     finally:
         dot_process.terminate()
