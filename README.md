@@ -8,8 +8,8 @@ results in a visible seam line or other undesired artifacts. The goal of this
 project is to devise a numerical solution to this problem by minimizing the
 energy/error between edge pairs.
 
-This repository contains a release candidate for the development version found 
-[here](http://github.com/zfergus/seam-erasure-dev). See the Seam-Erasure-Dev 
+This repository contains a release candidate for the development version found
+[here](http://github.com/zfergus/seam-erasure-dev). See the Seam-Erasure-Dev
 repository for the latest and experimental developments.
 
 <img src = "static/img/teaser.png" width="100%">
@@ -36,12 +36,14 @@ sudo -H pip[3] install numpy scipy pillow recordclass
 
 ## Usage
 
-To use the seam eraser tool first install the required packages. Then
+To use the seam eraser tool, first install the required packages, then
 enter the following into a cmd-line:
 
 ```bash
-python ./src/main.py path/to/input_model path/to/input_texture [-h] [-o path/to/output_texture] [-d] [-m {weighted,nullspace,mosek}] [--sv {none,texture,lerp}] [-g]
+python ./src/main.py path/to/input_model path/to/input_texture [-h] [-o path/to/output_texture] [-g] [--sv {none,texture,lerp}] [-d]
 ```
+
+Use option `-h` for descriptions of each argument.
 
 ## Files
 

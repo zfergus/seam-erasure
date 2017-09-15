@@ -32,8 +32,7 @@ def create_parser():
         "in sampled values along texture edge pairs.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         usage="%(prog)s path/to/input_model path/to/input_texture [-h] " +
-        "[-o path/to/output_texture] [-d] [-m {weighted,nullspace,mosek}] " +
-        "[--sv {none,texture,lerp}] [-g]")
+        "[-o path/to/output_texture] [-g] [--sv {none,texture,lerp}] [-d]")
     parser.add_argument("in_mesh", metavar="path/to/input_model",
         help="Path to input mesh file.")
     parser.add_argument("in_texture", metavar="path/to/input_texture",
@@ -42,20 +41,17 @@ def create_parser():
     parser.add_argument("-o", "--output", metavar="path/to/output_texture",
         help="Name of output texture or directory to save batch textures.",
         dest="out_texture")
-    parser.add_argument("-d", "--data", action="store_true",
-        dest="loadFromData",
-        help="Should the input texture(s) be loaded as data files?")
-    parser.add_argument("-m", "--method", default="weighted", dest="method",
-        choices=["weighted", "nullspace"],
-        help="What method should be used for solving?")
+    parser.add_argument("-g", "--global", action="store_true",
+        dest="do_global", help="Should the minimization have global effects?")
     parser.add_argument("--sv", choices=["none", "texture", "lerp"],
         default="none", dest="sv_method",
         help="What method should be used to compute the seam value energy?" +
         "None implies do not use seam value." +
         "Texture implies use difference in originial texture." +
         "Lerp implies use linearly interpolated values along the edge.")
-    parser.add_argument("-g", "--global", action="store_true",
-        dest="do_global", help="Should the minimization have global effects?")
+    parser.add_argument("-d", "--data", action="store_true",
+        dest="loadFromData",
+        help="Should the input texture(s) be loaded as data files?")
     # parser.add_argument("-t", "--trilinear", "--mipmap", action="store_true",
     #     dest="do_mipmap", help="Should mip maps be generated and minimized?")
     return parser
@@ -113,7 +109,7 @@ def parse_args(parser=None):
             "lerp while performing batch texture solving.")
 
     return (args.in_mesh, args.in_texture, args.out_texture, loadFromDirectory,
-            args.loadFromData, args.method, sv_method, args.do_global)
+            args.loadFromData, sv_method, args.do_global)
 
 
 def loadTextures(in_path, loadFromDirectory, loadFromData):
@@ -204,7 +200,7 @@ def saveTextures(outData, textures, out_path, loadFromDirectory):
 # CMD-line tool for getting filenames. #
 ########################################
 if __name__ == '__main__':
-    (in_mesh, in_texture, out_texture, loadFromDirectory, loadFromData, method,
+    (in_mesh, in_texture, out_texture, loadFromDirectory, loadFromData,
         sv_method, do_global) = parse_args()
 
     # Time the amount of time this takes.
