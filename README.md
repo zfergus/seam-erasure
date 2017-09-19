@@ -1,5 +1,5 @@
 # Seam Erasure
-Erases texture seams to prevent visible seams or tearing in displacement maps.
+Erases texture seams to prevent visible seams or tearing in various texture maps (color, normal, displacement, ambient occlusion, etc.).
 
 ## Overview
 
