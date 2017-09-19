@@ -207,7 +207,7 @@ def solve_seam(mesh, texture, display_energy_file=None,
         quad = quad.tocoo()
         system = cvxopt.spmatrix(quad.data, numpy.array(quad.row, dtype=int),
             numpy.array(quad.col, dtype=int))
-        rhs = cvxopt.matrix(lin.A)
+        rhs = cvxopt.matrix(-lin.A)
         cvxopt.cholmod.linsolve(system, rhs)
         solution = numpy.array(rhs)
     except Exception as e:
