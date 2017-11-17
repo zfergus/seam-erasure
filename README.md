@@ -1,4 +1,9 @@
 # Seam Erasure
+
+<img src = "static/img/teaser.png" width="100%">
+
+[http://cragl.cs.gmu.edu/seamless](http://cragl.cs.gmu.edu/seamless)
+
 Erases texture seams to prevent visible seams or tearing in various texture maps (color, normal, displacement, ambient occlusion, etc.).
 
 ## Overview
@@ -12,18 +17,16 @@ This repository contains a release candidate for the development version found
 [here](http://github.com/zfergus/seam-erasure-dev). See the Seam-Erasure-Dev
 repository for the latest and experimental developments.
 
-<img src = "static/img/teaser.png" width="100%">
-
-## Requirements
+## Dependencies
 
 This repository is designed for Python 2, but it should be compatible with
 Python 3 as well.
 
 Python libraries: (`sudo pip[3] install <package-name>`)
-* recordclass - simple data objects
-* scipy - sparse matrix operations
-* numpy - linear algebra
-* pillow - saving/loading texture image files
+* recordclass: simple data objects
+* scipy: sparse matrix operations
+* numpy: linear algebra
+* pillow: saving/loading texture image files
 
 ### Installation
 
@@ -42,16 +45,26 @@ enter the following into a cmd-line:
 ```bash
 python ./src/main.py path/to/input_model path/to/input_texture [-h] [-o path/to/output_texture] [-g] [--sv {none,texture,lerp}] [-d]
 ```
+Positional arguments:
+* `path/to/input_model`: Path to input mesh file.
+* `path/to/input_texture`: Path to input texture image or directory to load all textures from.
 
-Use option `-h` for descriptions of each argument.
-
+Optional arguments:
+* `-h`, `--help`: Show this help message and exit
+* `-o path/to/output_texture`, `--output path/to/output_texture`: Name of output texture or directory to save batch textures.
+* `-g`, `--global`: Should the minimization have global effects? (default: False)
+* `--sv {none,texture,lerp}`What method should be used to compute the seam value
+energy? None implies do not use seam value. Texture implies use difference in originial texture. Lerp
+implies use linearly interpolated values along the edge. (default: none)
+* `-d`, `--data`: Should the input texture(s) be loaded as data files? (default: False)
+                        
 ## Files
 
-* `server.py` - Flask based Python code for handling web inputs.
-* `SeamErasure/` - Python package for Seam-Erasure
-    * `SeamErasure/main.py` - Command-line interface for seam erasure.
-* `static/` - Static web page content including style sheets
-* `templates/` - HTML template pages
+* `server.py`: Flask based Python code for handling web inputs.
+* `SeamErasure/`: Python package for Seam-Erasure
+    * `SeamErasure/main.py`: Command-line interface for seam erasure.
+* `static/`: Static web page content including style sheets
+* `templates/`: HTML template pages
 
 ## Results
 
