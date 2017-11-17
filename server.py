@@ -11,7 +11,7 @@ from PIL import Image
 from flask import (Flask, request, render_template, url_for, flash, redirect,
     send_file)
 
-from SeamErasure import seam_minimizer, obj_reader, util
+from SeamErasure import seam_erasure, obj_reader, util
 from SeamErasure.lib import weight_data
 
 
@@ -49,8 +49,8 @@ def index():
     return render_template('min-form.html')
 
 
-@app.route('/minimized', methods=['GET', 'POST'])
-def minimize():
+@app.route('/erased', methods=['GET', 'POST'])
+def erase():
     if request.method == 'POST':
         try:
             startTime = time.time()
@@ -82,14 +82,14 @@ def minimize():
                     textureData = textureData / 255.0
             height, width, depth = (textureData.shape + (1,))[:3]
 
-            sv_methods = {"none": seam_minimizer.SeamValueMethod.NONE,
-                "texture": seam_minimizer.SeamValueMethod.TEXTURE,
-                "lerp": seam_minimizer.SeamValueMethod.LERP}
+            sv_methods = {"none": seam_erasure.SeamValueMethod.NONE,
+                "texture": seam_erasure.SeamValueMethod.TEXTURE,
+                "lerp": seam_erasure.SeamValueMethod.LERP}
             sv_method = sv_methods[request.form["sv"]]
 
             do_global = "global" in request.form
 
-            out = seam_minimizer.solve_seam(mesh, textureData,
+            out = seam_erasure.erase_seam(mesh, textureData,
                 do_global=do_global, sv_method=sv_method,
                 display_energy_file=None)
 
@@ -100,7 +100,7 @@ def minimize():
                 out = util.to_uint8(out)
 
             base, ext = os.path.splitext(os.path.basename(tex_file.filename))
-            out_filename = base + "-minimized" + ext
+            out_filename = base + "-erased" + ext
             if isDataFile:
                 img_io = cStringIO.StringIO()
                 weight_data.write_tex_to_file(img_io, textureData)
@@ -124,12 +124,12 @@ def minimize():
                         min_tex=data_uri, runtime=("%.2f" %
                         (time.time() - startTime)),
                         mime_type=Image.MIME[Image.EXTENSION[ext]])
-                except:
+                except Exception:
                     return send_file(img_io, as_attachment=True,
                         attachment_filename=out_filename)
         except Exception as e:
             return render_template('min-error.html',
-                error_msg=("Unable to minimize the texture (%s)." % e.message))
+                error_msg=("Unable to erase the texture (%s)." % e.message))
     return render_template('min-form.html')
 
 if __name__ == '__main__':

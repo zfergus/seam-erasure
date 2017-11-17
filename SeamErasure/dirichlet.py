@@ -209,20 +209,9 @@ def dirichlet_energy(rows, cols, y, mask = None, skip = None):
 def coo_diag(vals):
     try:
         indices = arange(vals.shape[0])
-    except:
+    except Exception:
         indices = arange(len(vals))
     return sparse.coo_matrix((vals, (indices, indices)))
-
-
-def test_against_dirichlet():
-    print('=== test_against_dirichlet() ===')
-
-    import dirichlet_old
-    for rows, cols in [(2, 2), (2, 3), (3, 2), (30, 2), (2, 30), (3, 3),
-                       (30, 30)]:
-        print(rows, 'rows by', cols, 'cols:', (
-            abs(dirichlet_old.gen_symmetric_grid_laplacian2(rows, cols) -
-                gen_symmetric_grid_laplacian(rows, cols))).sum())
 
 
 def test_mask():
@@ -244,7 +233,6 @@ def test_mask():
     print(4 * L.diagonal().reshape(shape))
 
 if __name__ == '__main__':
-    # test_against_dirichlet()
     # test_mask()
     sizes = [(4, 4, 1), (10, 10, 1), (100, 100, 1), (1000, 1000, 1)]
     for size in sizes:
@@ -260,5 +248,5 @@ if __name__ == '__main__':
         inTex = numpy.zeros((N, depth))
         # import pdb; pdb.set_trace()
         coeff = dirichlet_energy(height, width, inTex)
-        from seam_minimizer import display_quadratic_energy
+        from seam_erasure import display_quadratic_energy
         display_quadratic_energy(coeff, inTex, diriTex, "Dirichlet")

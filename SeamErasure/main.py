@@ -1,6 +1,6 @@
 #!/usr/bin/env python -u
 """
-CMD-line tool for running seam minimizer.
+CMD-line tool for running seam erasure.
 Written by Zachary Ferguson
 """
 from __future__ import print_function, division
@@ -18,7 +18,7 @@ import numpy
 
 import obj_reader
 import texture
-import seam_minimizer
+import seam_erasure
 from util import to_uint8
 from lib import weight_data
 
@@ -52,8 +52,6 @@ def create_parser():
     parser.add_argument("-d", "--data", action="store_true",
         dest="loadFromData",
         help="Should the input texture(s) be loaded as data files?")
-    # parser.add_argument("-t", "--trilinear", "--mipmap", action="store_true",
-    #     dest="do_mipmap", help="Should mip maps be generated and minimized?")
     return parser
 
 
@@ -82,12 +80,12 @@ def parse_args(parser=None):
     if(args.out_texture is None):
         if(loadFromDirectory):
             args.out_texture = os.path.normpath(args.in_texture +
-                "/minimized") + "/"
+                "/erased") + "/"
         else:
             # Split the input texture name by the extension.
             in_path, in_ext = os.path.splitext(args.in_texture)
             # Create a temporary output texture filename.
-            args.out_texture = in_path + '-minimized' + in_ext
+            args.out_texture = in_path + '-erased' + in_ext
     else:
         if(loadFromDirectory):
             if(os.path.isfile(args.out_texture)):
@@ -99,9 +97,9 @@ def parse_args(parser=None):
                 parser.error("Input texture is a file, but output is a " +
                              "directory.")
 
-    sv_methods = {"none": seam_minimizer.SeamValueMethod.NONE,
-        "texture": seam_minimizer.SeamValueMethod.TEXTURE,
-        "lerp": seam_minimizer.SeamValueMethod.LERP}
+    sv_methods = {"none": seam_erasure.SeamValueMethod.NONE,
+        "texture": seam_erasure.SeamValueMethod.TEXTURE,
+        "lerp": seam_erasure.SeamValueMethod.LERP}
     sv_method = sv_methods[args.sv_method]
 
     if(loadFromDirectory and sv_method == sv_methods["lerp"]):
@@ -185,7 +183,7 @@ def saveTextures(outData, textures, out_path, loadFromDirectory):
         # Save the solved texture
         if(loadFromDirectory):
             base, ext = os.path.splitext(textureFile.name)
-            out_texture = os.path.join(out_path, base + "-minimized" + ext)
+            out_texture = os.path.join(out_path, base + "-erased" + ext)
         else:
             out_texture = out_path
 
@@ -227,7 +225,7 @@ if __name__ == '__main__':
     print("Model: %s\nTexture: %s\n" % (os.path.basename(in_mesh),
         os.path.basename(in_texture)), file=out_file)
 
-    out = seam_minimizer.solve_seam(mesh, textureData,
+    out = seam_erasure.erase_seam(mesh, textureData,
         display_energy_file=out_file, sv_method=sv_method, do_global=do_global)
 
     minVal = out.min()

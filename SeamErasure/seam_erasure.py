@@ -166,11 +166,11 @@ def compute_energies(mesh, texture, sv_method=SeamValueMethod.NONE):
     return Energies(BLE=BLE, SV=SV, SG=SG, LSQ=LSQ, L=L)
 
 
-def solve_seam(mesh, texture, display_energy_file=None,
+def erase_seam(mesh, texture, display_energy_file=None,
         sv_method=SeamValueMethod.NONE, do_global=False):
     """
-    Solves for the minimized seam values.
-    Returns the minimized texture as a numpy array, shape = (N, depth)
+    Solves for the erased seam values.
+    Returns the erased texture as a numpy array, shape = (N, depth)
     """
     height, width, depth = (texture.shape + (1,))[:3]
     N = width * height
