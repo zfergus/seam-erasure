@@ -53,6 +53,7 @@ Optional arguments:
 * `-h`, `--help`: Show this help message and exit
 * `-o path/to/output_texture`, `--output path/to/output_texture`: Name of output texture or directory to save batch textures.
 * `-g`, `--global`: Should the minimization have global effects? (default: False)
+  * **This should be used if the texture has global discontinies. This will propogate changes from the seam inward. See the teaser image for a example of global discontinties (the texture is a gradient image).**
 * `--sv {none,texture,lerp}`What method should be used to compute the seam value
 energy? None implies do not use seam value. Texture implies use difference in originial texture. Lerp
 implies use linearly interpolated values along the edge. (default: none)
