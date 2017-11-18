@@ -1,5 +1,6 @@
 """
-Minimize the energy difference of a textures "outside" pixels.
+Erase texture seams to prevent visible seams or tearing in various texture
+maps (color, normal, displacement, ambient occlusion, etc.)
 
 Written by Zachary Ferguson
 """
@@ -106,8 +107,7 @@ def compute_seam_lengths(mesh, seam):
 
 def compute_energies(mesh, texture, sv_method=SeamValueMethod.NONE):
     """
-        Minimize the difference between the values of cooresponding edges,
-        edge pairs.
+        Compute energies used in the final optimization.
         Parameters:
             mesh - a OBJ recordclass for the mesh
             texture - a height x width x depth numpy array of texture values
@@ -182,7 +182,7 @@ def erase_seam(mesh, texture, display_energy_file=None,
     print("Solving for minimal energy solution")
     sys.stdout.flush()
 
-    # Minimize energy with constraints (Quad * x = lin)
+    # Minimize quadtratic energy (Quad * x = lin)
     # Weights in the order [bleW, svW, sgW, lsqW, diriW]
     if(do_global):
         weights = 1e10, 1e2, 1e2, 1e2, 1e0

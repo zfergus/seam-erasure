@@ -28,8 +28,9 @@ InputTextureFile = recordclass("InputTextureFile", ["name", "depth", "isFloat",
 
 def create_parser():
     """ Creates an ArgumentParser for this command line tool. """
-    parser = argparse.ArgumentParser(description = "Minimize the difference " +
-        "in sampled values along texture edge pairs.",
+    parser = argparse.ArgumentParser(description = "Erase texture seams to " +
+        "prevent visible seams or tearing in various texture maps (color, " +
+        "normal, displacement, ambient occlusion, etc.)",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         usage="%(prog)s path/to/input_model path/to/input_texture [-h] " +
         "[-o path/to/output_texture] [-g] [--sv {none,texture,lerp}] [-d]")
