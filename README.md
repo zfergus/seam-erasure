@@ -39,8 +39,10 @@ sudo -H pip[3] install numpy scipy pillow recordclass
 
 ## Usage
 
+### Command-Line
+
 To use the seam eraser tool, first install the required packages, then
-enter the following into a cmd-line:
+enter the following into a command-line:
 
 ```bash
 python ./src/main.py path/to/input_model path/to/input_texture [-h] [-o path/to/output_texture] [-g] [--sv {none,texture,lerp}] [-d]
@@ -58,7 +60,7 @@ Optional arguments:
 energy? None implies do not use seam value. Texture implies use difference in originial texture. Lerp
 implies use linearly interpolated values along the edge. (default: none)
 * `-d`, `--data`: Should the input texture(s) be loaded as data files? (default: False)
-                        
+
 ## Files
 
 * `server.py`: Flask based Python code for handling web inputs.
@@ -66,6 +68,19 @@ implies use linearly interpolated values along the edge. (default: none)
     * `SeamErasure/main.py`: Command-line interface for seam erasure.
 * `static/`: Static web page content including style sheets
 * `templates/`: HTML template pages
+
+### Web Browser UI
+
+This repository also includes a Flask based server implementation that can be
+run locally. This provides a simple webpage interface to provide model/texture
+input and select options. To get this user interface run:
+
+```
+python server.py
+```
+
+This will start a server on the localhost. Navigate to the outputted address
+in your choice of web browser to view the interface.
 
 ## Results
 
