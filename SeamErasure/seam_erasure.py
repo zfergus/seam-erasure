@@ -15,17 +15,17 @@ from recordclass import recordclass
 import scipy
 import numpy
 
-import SeamErasure.obj_reader as obj_reader
-from SeamErasure.find_seam import find_seam, seam_to_UV
-import SeamErasure.bilerp_energy as bilerp_energy
-import SeamErasure.lsq_constraints as lsq_constraints
-from SeamErasure.mask import *
-import SeamErasure.dirichlet as dirichlet
-import SeamErasure.seam_gradient as seam_gradient
-import SeamErasure.seam_value_energy_texture as seam_value_energy_texture
-import SeamErasure.seam_value_energy_lerp as seam_value_energy_lerp
-from SeamErasure.texture import save_texture
-from SeamErasure.util import *
+from . import obj_reader
+from .find_seam import find_seam, seam_to_UV
+from . import bilerp_energy
+from . import lsq_constraints
+from .mask import *
+from . import dirichlet
+from . import seam_gradient
+from . import seam_value_energy_texture
+from . import seam_value_energy_lerp
+from .texture import save_texture
+from .util import *
 
 energies_str = "BLE, SV, SG, LSQ, L"
 Energies = recordclass("Energies", energies_str)

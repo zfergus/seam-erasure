@@ -9,9 +9,9 @@ import numpy
 import scipy.sparse
 import itertools
 
-from SeamErasure.accumulate_coo import AccumulateCOO
-from SeamErasure.seam_intervals import compute_edgePair_intervals
-from SeamErasure.util import *
+from .accumulate_coo import AccumulateCOO
+from .seam_intervals import compute_edgePair_intervals
+from .util import *
 
 import warnings
 warnings.simplefilter('ignore', scipy.sparse.SparseEfficiencyWarning)

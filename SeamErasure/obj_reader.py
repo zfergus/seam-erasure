@@ -9,7 +9,7 @@ from recordclass import recordclass
 
 import numpy
 
-from SeamErasure.util import UV, XYZ
+from .util import UV, XYZ
 
 # 'extra' is for extra lines
 OBJ = recordclass('OBJ', ['v', 'vt', 'vn', 'vc', 'f', 'extra', 'filename'])

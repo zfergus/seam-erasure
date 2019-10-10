@@ -16,14 +16,14 @@ import pdb
 
 import numpy
 
-import obj_reader
-import texture
-import seam_erasure
-from util import to_uint8
-from lib import weight_data
+from SeamErasure import obj_reader
+from SeamErasure import texture
+from SeamErasure import seam_erasure
+from SeamErasure.util import to_uint8
+from SeamErasure.lib import weight_data
 
-InputTextureFile = recordclass("InputTextureFile", ["name", "depth", "isFloat",
-    "isDataFile"])
+InputTextureFile = recordclass(
+    "InputTextureFile", ["name", "depth", "isFloat", "isDataFile"])
 
 
 def create_parser():

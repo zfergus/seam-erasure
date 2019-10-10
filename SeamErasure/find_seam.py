@@ -11,7 +11,7 @@ from __future__ import print_function, division
 
 import numpy
 
-from SeamErasure.util import pairwise_loop, UV
+from .util import pairwise_loop, UV
 
 
 def edges_equal_in_UV(mesh, forwards, backwards):
