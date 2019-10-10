@@ -12,7 +12,7 @@ from flask import (
     Flask, request, render_template, url_for, flash, redirect, send_file)
 
 from SeamErasure import seam_erasure, obj_reader, util
-from SeamErasure.lib import weight_data
+from SeamErasure import weight_data
 
 app = Flask(__name__)
 
