@@ -2,4 +2,4 @@ numpy
 scipy
 recordclass
 pillow
-pathlib
+pathlib; python_version < '3.4'
