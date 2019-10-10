@@ -13,4 +13,4 @@ install:
 # command to run tests
 script:
   - python main.py examples/cube/cube.obj examples/cube/texture-bad-background.png --output examples/cube/travis-results.png
-  - diff examples/cube/texture-bad-background.png examples/cube/travis-results.png || exit 1
+  - python tests/compare_images.py examples/cube/texture-bad-background.png examples/cube/travis-results.png
