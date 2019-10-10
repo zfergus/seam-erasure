@@ -16,9 +16,9 @@ import itertools
 from math import floor, ceil
 from collections import deque
 
-from SeamErasure.seam_intervals import compute_edge_intervals
-from SeamErasure.points_in_triangle import points_in_triangle
-from SeamErasure.util import *
+from .seam_intervals import compute_edge_intervals
+from .points_in_triangle import points_in_triangle
+from .util import *
 
 
 def get_all_surrounding_pixels(edges, width, height):

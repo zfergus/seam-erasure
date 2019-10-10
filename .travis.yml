@@ -5,11 +5,11 @@ python:
   - "3.5"
   - "3.6"
   - "3.7"
-  - "3.8-dev"  # 3.8 development branch
-  - "nightly"  # nightly build
+  # - "3.8-dev"  # 3.8 development branch
+  # - "nightly"  # nightly build
 # command to install dependencies
 install:
   - pip install -r requirements.txt
 # command to run tests
 script:
-  - python SeamErasure/main.py examples/cube/cube.obj examples/cube/texture-bad-background.png
+  - python main.py examples/cube/cube.obj examples/cube/texture-bad-background.png

@@ -8,7 +8,7 @@ import scipy.sparse
 import scipy.sparse.linalg
 import numpy
 
-from SeamErasure.util import *
+from .util import *
 
 
 def constrain_values(mask, textureVec):

@@ -44,7 +44,7 @@ import numpy
 from numpy import *
 from scipy import sparse
 
-from SeamErasure.util import QuadEnergy, print_progress, rowcol_to_index
+from .util import QuadEnergy, print_progress, rowcol_to_index
 
 
 def grad_and_mass(rows, cols, mask = None, skip = None):

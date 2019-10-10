@@ -39,7 +39,7 @@ To use the seam eraser tool, first install the required packages, then
 enter the following into a command-line:
 
 ```bash
-python SeamErasure/main.py path/to/input_model path/to/input_texture [-h] [-o path/to/output_texture] [-g] [--sv {none,texture,lerp}] [-d]
+python main.py path/to/input_model path/to/input_texture [-h] [-o path/to/output_texture] [-g] [--sv {none,texture,lerp}] [-d]
 ```
 
 Positional arguments:
@@ -60,9 +60,9 @@ energy? (default: `none`)
 
 ## Files
 
-* `server.py`: Flask based Python code for handling web inputs.
 * `SeamErasure/`: Python package for Seam-Erasure
-    * `SeamErasure/main.py`: Command-line interface for seam erasure.
+* `main.py`: Command-line interface for seam erasure.
+* `server.py`: Flask based Python code for handling web inputs.
 * `examples/`: examples 3D model and texture files for testing
 * `static/`: Static web page content including style sheets
 * `templates/`: HTML template pages
