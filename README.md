@@ -2,9 +2,10 @@
 
 [![Build Status](https://travis-ci.com/zfergus/seam-erasure.svg?branch=master)](https://travis-ci.com/zfergus/seam-erasure)
 
-<img src = "static/img/teaser.png" width="100%">
-
-**Seamlessly erase seams from your favorite 3D models.**
+<p align="center">
+<img src = "static/img/teaser.png" width="80%"><br>
+<b>Seamlessly erase seams from your favorite 3D models.</b>
+</p>
 
 * [Project Page](https://cragl.cs.gmu.edu/seamless/)
 * [Paper](https://goo.gl/1LwB3Z)
