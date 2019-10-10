@@ -2,3 +2,4 @@ numpy
 scipy
 recordclass
 pillow
+pathlib
