@@ -16,9 +16,9 @@ import itertools
 from math import floor, ceil
 from collections import deque
 
-from seam_intervals import compute_edge_intervals
-from points_in_triangle import points_in_triangle
-from util import *
+from SeamErasure.seam_intervals import compute_edge_intervals
+from SeamErasure.points_in_triangle import points_in_triangle
+from SeamErasure.util import *
 
 
 def get_all_surrounding_pixels(edges, width, height):
@@ -103,10 +103,10 @@ def mask_inside_seam(mesh, seam_edges, width, height):
 
     # Create a list of the UV faces in Pixel space
     faces = [numpy.array([UV_to_XY(mesh.vt[fv.vt], width, height)
-        for fv in face]) for face in mesh.f]
+             for fv in face]) for face in mesh.f]
 
     # This mask should be small enough for a dense matrix
-    mask = numpy.zeros((height, width), dtype = bool)
+    mask = numpy.zeros((height, width), dtype=bool)
 
     # Constrain all the pixels in seam_pixels that are inside a face
     pts = numpy.array(list(seam_pixels))
@@ -126,18 +126,18 @@ def mask_inside_seam(mesh, seam_edges, width, height):
             mask[inbox[:, 1], inbox[:, 0]] |= points_in_triangle(face, inbox)
 
     # Mask is False if pixels inside (this needs to be inverted).
-    vals = numpy.full(len(seam_pixels), True, dtype = bool)
+    vals = numpy.full(len(seam_pixels), True, dtype=bool)
     coords = numpy.array(list(seam_pixels))
     full = scipy.sparse.coo_matrix((vals, (coords[:, 1], coords[:, 0])),
-        shape = mask.shape).A
-    mask = (full - mask).astype(bool)
+                                   shape=mask.shape).A
+    mask = full ^ mask
 
     print_progress(1.0)
     print()
     return ~(mask)
 
 
-def mask_inside_faces(mesh, width, height, init_mask = None):
+def mask_inside_faces(mesh, width, height, init_mask=None):
     """
     Create a boolean mask for if the pixels of a texture is constrained (True)
     or free (False). For all pixels mask the pixel as false if the pixel is

@@ -9,7 +9,7 @@ from recordclass import recordclass
 
 import numpy
 
-from util import UV, XYZ
+from SeamErasure.util import UV, XYZ
 
 # 'extra' is for extra lines
 OBJ = recordclass('OBJ', ['v', 'vt', 'vn', 'vc', 'f', 'extra', 'filename'])
@@ -30,6 +30,8 @@ def parse_obj(obj_file, filename=None):
     extra_lines = []
 
     for line in obj_file:
+        if(type(line) is bytes):
+            line = line.decode()
         sline = line.strip().split()
         if len(sline) == 0:
             continue

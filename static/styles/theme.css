@@ -1,8 +1,8 @@
 body {
-    background-color: #2A3132;
-    color: white;
-    margin-left:20%;
-    margin-right:20%;
+    background-color: white;
+    color: black;
+    margin-left: 20%;
+    margin-right: 20%;
 }
 
 label {
@@ -10,7 +10,7 @@ label {
     font-weight: bold;
 }
 
-#output{
+#output {
     background-color: #D2B48C;
     font-family: "Lucida Console", "Courier New";
     margin-top: 10px;
@@ -21,7 +21,7 @@ label {
 
 h1 {
     margin: 20px;
-    margin-left:-10%;
+    margin-left: -10%;
     margin-right: -10%;
     padding-bottom: 10px;
     text-align: center;
@@ -30,55 +30,57 @@ h1 {
 }
 
 [data-tip] {
-    position:relative;
-
+    position: relative;
 }
+
 [data-tip]:before {
-    content:'';
+    content: '';
     /* hides the tooltip when not hovered */
-    display:none;
-    content:'';
-    display:none;
+    display: none;
+    content: '';
+    display: none;
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
     border-bottom: 5px solid #1a1a1a;
-    position:absolute;
-    top:20px;
-    left:35px;
-    z-index:8;
-    font-size:0;
-    line-height:0;
-    width:0;
-    height:0;
-    position:absolute;
-    top:20px;
-    left:35px;
-    z-index:8;
-    font-size:0;
-    line-height:0;
-    width:0;
-    height:0;
+    position: absolute;
+    top: 20px;
+    left: 35px;
+    z-index: 8;
+    font-size: 0;
+    line-height: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+    top: 20px;
+    left: 35px;
+    z-index: 8;
+    font-size: 0;
+    line-height: 0;
+    width: 0;
+    height: 0;
 }
+
 [data-tip]:after {
-    display:none;
-    content:attr(data-tip);
-    position:absolute;
-    top:25px;
-    left:0px;
-    padding:5px 8px;
-    background:#1a1a1a;
-    color:#fff;
-    z-index:9;
+    display: none;
+    content: attr(data-tip);
+    position: absolute;
+    top: 25px;
+    left: 0px;
+    padding: 5px 8px;
+    background: #1a1a1a;
+    color: #fff;
+    z-index: 9;
     font-size: 1em;
-    height:18px;
-    line-height:18px;
+    height: 18px;
+    line-height: 18px;
     -webkit-border-radius: 3px;
     -moz-border-radius: 3px;
     border-radius: 3px;
-    white-space:nowrap;
-    word-wrap:normal;
+    white-space: nowrap;
+    word-wrap: normal;
 }
+
 [data-tip]:hover:before,
 [data-tip]:hover:after {
-    display:block;
+    display: block;
 }

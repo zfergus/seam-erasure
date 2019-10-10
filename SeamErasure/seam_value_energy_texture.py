@@ -9,10 +9,10 @@ import numpy
 import scipy.sparse
 import itertools
 
-from bilerp_energy import bilerp_coeffMats
+from SeamErasure.bilerp_energy import bilerp_coeffMats
 
-from seam_intervals import compute_edge_intervals
-from util import *
+from SeamErasure.seam_intervals import compute_edge_intervals
+from SeamErasure.util import *
 
 import warnings
 warnings.simplefilter('ignore', scipy.sparse.SparseEfficiencyWarning)

@@ -6,7 +6,8 @@ Written by Zachary Ferguson
 """
 
 import math
-from util import UV_to_XY, range_min_max
+
+from SeamErasure.util import UV_to_XY, range_min_max
 
 
 def compute_edge_intervals(edge, width, height):
