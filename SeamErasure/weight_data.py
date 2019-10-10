@@ -130,6 +130,7 @@ def normalize_data(data, mask = None):
         assert mask.shape == data.shape[:2]
         data[mask] /= data.sum(axis = 2)[mask][..., newaxis]
 
+
 if __name__ == '__main__':
     import sys
 
