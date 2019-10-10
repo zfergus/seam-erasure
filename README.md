@@ -4,9 +4,7 @@
 
 <img src = "static/img/teaser.png" width="100%">
 
-<p style="text-align:center;font-weight:bold">
-Seamlessly erase seams from your favorite 3D models.
-</p>
+**Seamlessly erase seams from your favorite 3D models.**
 
 * [Project Page](https://cragl.cs.gmu.edu/seamless/)
 * [Paper](https://goo.gl/1LwB3Z)
