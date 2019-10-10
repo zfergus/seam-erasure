@@ -11,11 +11,10 @@ class AccumulateCOO(object):
     Class for accumulating additions of COO matricies. Does not sum matrices
     until total() is called.
     """
-
     def __init__(self):
         """ Create an empty COO matrix accumulator. """
-        self.row  = []
-        self.col  = []
+        self.row = []
+        self.col = []
         self.data = []
 
     def add(self, A):
@@ -25,8 +24,8 @@ class AccumulateCOO(object):
         Input:
             A - A coo_matrix to add to this matrix
         """
-        self.row .append(A.row)
-        self.col .append(A.col)
+        self.row.append(A.row)
+        self.col.append(A.col)
         self.data.append(A.data)
 
     def total(self, shape):
@@ -40,6 +39,7 @@ class AccumulateCOO(object):
         assert len(self.row) == len(self.col)
         assert len(self.row) == len(self.data)
 
-        return scipy.sparse.coo_matrix((numpy.concatenate(self.data),
-            (numpy.concatenate(self.row), numpy.concatenate(self.col))),
-            shape = shape)
+        return scipy.sparse.coo_matrix(
+            (numpy.concatenate(self.data),
+             (numpy.concatenate(self.row), numpy.concatenate(self.col))),
+            shape=shape)

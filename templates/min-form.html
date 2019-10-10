@@ -1,50 +1,53 @@
 <html>
+
 <head>
-    <link rel="stylesheet" type="text/css"
-        href="{{ url_for('static',filename='styles/theme.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/theme.min.css') }}">
     <title>Seam Erasure</title>
 </head>
+
 <body>
 
-<h1>Seam Minimization</h1>
-<form action="/erased" method="post" enctype=multipart/form-data>
-    <label>OBJ Model:</label><br>
-    <input type="file" name="obj-input"/><br>
-    <br>
+    <h1>Seam Erasure</h1>
+    <form action="/erased" method="post" enctype=multipart/form-data> <label>OBJ
+        Model:</label><br>
+        <input type="file" name="obj-input" /><br>
+        <br>
 
-    <label>Texture Image:</label><br>
-    <input type="file" name="tex-input"/><br>
-    <br>
+        <label>Texture Image:</label><br>
+        <input type="file" name="tex-input" /><br>
+        <br>
 
-    <!-- <label>Method of solving:</label><br>
-    <input type="radio" name="method" value="weighted" checked="checked">Weighted</input><br>
-    <input type="radio" name="method" value="nullspace">Nullspace</input><br>
-    <br> -->
+        <!-- <label>Method of solving:</label><br>
+        <input type="radio" name="method" value="weighted" checked="checked">Weighted</input><br>
+        <input type="radio" name="method" value="nullspace">Nullspace</input><br>
+        <br> -->
 
-    <label>Type of Value Preserving Energy:</label><br>
-    <input type="radio" name="sv" value="none" checked="checked">None</input><br>
-    <div data-tip="Use the original seam values as a constraining term.">
-        <input type="radio" name="sv" value="texture">Texture</input><br>
-    </div>
-    <div data-tip="Use a linear function defined on the OBJ's vertices as a contraining term.">
-        <input type="radio" name="sv" value="lerp">Linear Interpolation</input><br>
-    </div>
-    <br>
+        <label>Type of Value Preserving Energy:</label><br>
+        <input type="radio" name="sv" value="none" checked="checked">None</input><br>
+        <div data-tip="Use the original seam values as a constraining term.">
+            <input type="radio" name="sv" value="texture">Texture</input><br>
+        </div>
+        <div data-tip="Use a linear function defined on the OBJ's vertices as a contraining term.">
+            <input type="radio" name="sv" value="lerp">Linear Interpolation</input><br>
+        </div>
+        <br>
 
-    <label>Global effects:</label><br>
-    <div data-tip='Should the solution be globally smoothed?'>
-        <input type="checkbox" name="global" value="global">Global minimization</input><br>
-    </div>
-    <br>
+        <label>Global effects:</label><br>
+        <div data-tip='Should the solution be globally smoothed?'>
+            <input type="checkbox" name="global" value="global">Global
+            minimization</input><br>
+        </div>
+        <br>
 
-    <label>Data file as texture:</label><br>
-    <div data-tip='Should the texture be treated as a ".data" file?'>
-        <input type="checkbox" name="data" value="data">Data file</input><br>
-    </div>
-    <br>
+        <label>Data file as texture:</label><br>
+        <div data-tip='Should the texture be treated as a ".data" file?'>
+            <input type="checkbox" name="data" value="data">Data file</input><br>
+        </div>
+        <br>
 
-    <input type="submit" value="Submit" onclick=""/>
-</form>
+        <input type="submit" value="Submit" onclick="" />
+    </form>
 
 </body>
+
 </html>

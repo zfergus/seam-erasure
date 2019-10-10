@@ -1,19 +1,21 @@
 <html>
+
 <head>
-    <link rel="stylesheet" type="text/css"
-        href="{{ url_for('static',filename='styles/theme.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/theme.min.css') }}">
     <title>Seam Erasure</title>
 </head>
+
 <body>
 
-<h1>Minimized Texture</h1>
+    <h1>Results</h1>
 
-<img src="data:{{ mime_type }};base64,{{ min_tex }}" title="Minimized Texture"
-    style="display:block; margin:0 auto;" alt="Minimized Texture">
+    <img src="data:{{ mime_type }};base64,{{ min_tex }}" title="Results" style="display:block; margin:0 auto;"
+        alt="Results">
 
-<p style="margin-left:10%;margin-right:10%;">
-Total Runtime: {{ runtime }} seconds
-</p>
+    <p style="margin-left:10%;margin-right:10%;">
+        Total Runtime: {{ runtime }} seconds
+    </p>
 
 </body>
+
 </html>
