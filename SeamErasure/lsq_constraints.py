@@ -6,9 +6,8 @@ Written by Zachary Ferguson
 
 import scipy.sparse
 import scipy.sparse.linalg
-import numpy
 
-from .util import *
+from .util import QuadEnergy
 
 
 def constrain_values(mask, textureVec):

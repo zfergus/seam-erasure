@@ -6,6 +6,7 @@ Written by Zachary Ferguson
 """
 
 import itertools
+import logging
 
 import numpy
 import scipy.sparse
@@ -15,7 +16,8 @@ from .bilerp_energy import bilerp_coeffMats
 
 from .seam_intervals import compute_edge_intervals
 from .accumulate_coo import AccumulateCOO
-from .util import *
+from .util import (lerp_UV, surrounding_pixels,
+                   globalEdge_to_local, pairwise, QuadEnergy)
 
 import warnings
 warnings.simplefilter('ignore', scipy.sparse.SparseEfficiencyWarning)
@@ -24,17 +26,25 @@ warnings.simplefilter('ignore', scipy.sparse.SparseEfficiencyWarning)
 def E_ab(a, b, mesh, edge, width, height):
     """
     Calculate the energy in the inverval a to b.
-    Parameters:
-        a, b - interval to integrate over
-        mesh - 3D model in OBJ format
-        edge - the edge in (fi, (fv0, fv1)) format
-        width, height - texture's dimensions
-    Returns: Energy matrix for the interval
+
+    Parameters
+    ----------
+    a, b - interval to integrate over
+    mesh - 3D model in OBJ format
+    edge - the edge in (fi, (fv0, fv1)) format
+    width, height - texture's dimensions
+
+    Returns
+    -------
+    Energy matrix for the interval
+
     """
     # Get the UV coordinates of the edge pair, swaping endpoints of one edge
     uv0, uv1 = [mesh.vt[mesh.f[edge[0]][i].vt] for i in edge[1]]
-    x0, x1 = [numpy.array(mesh.vc[mesh.f[edge[0]][i].v]).reshape(1, -1)
-              for i in edge[1]]
+    x0, x1 = [
+        numpy.array(mesh.vc[mesh.f[edge[0]][i].v]).reshape(1, -1)
+        for i in edge[1]
+    ]
 
     # Determine the midpoint of the interval in UV-space
     mid_uv = lerp_UV((a + b) / 2., uv0, uv1)
@@ -86,8 +96,8 @@ def E_ab(a, b, mesh, edge, width, height):
               + term(B.T.dot(x0) + C.T.dot(x1_x0), 2.0)
               + term(C.T.dot(x0), 1.0))
 
-    ijs = numpy.array(list(
-        itertools.product((p00, p10, p01, p11), range(x0.shape[1]))))
+    ijs = numpy.array(list(itertools.product(
+        (p00, p10, p01, p11), range(x0.shape[1]))))
 
     L = scipy.sparse.coo_matrix(
         (values.ravel(), ijs.reshape(-1, 2).T), shape=(nPixels, x0.shape[1]))
@@ -96,8 +106,7 @@ def E_ab(a, b, mesh, edge, width, height):
     # C is Dx1 * 1xD = DxD
     x1_x0x0 = x1_x0.T.dot(x0)
 
-    C = (term(x1_x0.T.dot(x1_x0), 3.0)
-         + term(x1_x0x0 + x1_x0x0.T, 2.0)
+    C = (term(x1_x0.T.dot(x1_x0), 3.0) + term(x1_x0x0 + x1_x0x0.T, 2.0)
          + term(x0.T.dot(x0), 1.0))
 
     return Q, L, C
@@ -106,6 +115,7 @@ def E_ab(a, b, mesh, edge, width, height):
 def E_edge(mesh, edge, width, height, edge_len):
     """
     Compute the energy coefficient matrix over a single edge.
+
     Inputs:
         mesh - the model in OBJ format
         edge - the edge in (fi, (fv0, fv1)) format
@@ -142,6 +152,7 @@ def E_edge(mesh, edge, width, height, edge_len):
 def E_total(mesh, edges, width, height):
     """
     Calculate the energy coeff matrix for a width x height texture.
+
     Inputs:
         mesh - the model in OBJ format
         edges - edges of the model in (fi, (fv0, fv1)) format
@@ -152,9 +163,10 @@ def E_total(mesh, edges, width, height):
         Returns the quadtratic term matrix for the seam value energy.
     """
     # Check the model contains vertex colors.
-    if(len(mesh.vc) != len(mesh.v)):
+    if (len(mesh.vc) != len(mesh.v)):
         raise ValueError(
-            "Mesh does not contain an equal number vertex colors and vertices.")
+            "Mesh does not contain an equal number vertex colors "
+            "and vertices.")
 
     # Sum up the energy coefficient matrices for all the edge pairs
     N = width * height
@@ -167,8 +179,8 @@ def E_total(mesh, edges, width, height):
     sum_edge_lens = 0.0
     desc = "Building Seam Value of Lerp Energy Matrix"
     disable_pbar = logging.getLogger().getEffectiveLevel() > logging.INFO
-    for i, edge in enumerate(tqdm(
-            edges, unit="edges", disable=disable_pbar, desc=desc)):
+    for i, edge in enumerate(tqdm(edges, unit="edges", disable=disable_pbar,
+                                  desc=desc)):
         # Calculate the 3D edge length
         verts = [numpy.array(mesh.v[mesh.f[edge[0]][i].v]) for i in edge[1]]
         edge_len = numpy.linalg.norm(verts[1] - verts[0])
@@ -186,6 +198,5 @@ def E_total(mesh, edges, width, height):
     L = L.total((N, depth))
 
     # Divide by the total edge length in 3D
-    return QuadEnergy((Q / sum_edge_lens).tocsc(),
-                      -L / sum_edge_lens,
-                      C / sum_edge_lens)
+    return QuadEnergy(
+        (Q / sum_edge_lens).tocsc(), -L / sum_edge_lens, C / sum_edge_lens)

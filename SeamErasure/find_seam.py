@@ -13,26 +13,25 @@ import logging
 
 import numpy
 
-from .util import pairwise_loop, UV
+from .util import pairwise_loop
 
 
 def edges_equal_in_UV(mesh, forwards, backwards):
-    """ Determine if the UV edges are equal. """
+    """Determine if the UV edges are equal."""
     faceEdge = (mesh.f[forwards[0]][forwards[1][0]],
-        mesh.f[forwards[0]][forwards[1][1]])
+                mesh.f[forwards[0]][forwards[1][1]])
     uvEdge0 = [mesh.vt[faceV.vt] for faceV in faceEdge]
 
     faceEdge = (mesh.f[backwards[0]][backwards[1][1]],
-        mesh.f[backwards[0]][backwards[1][0]])
+                mesh.f[backwards[0]][backwards[1][0]])
     uvEdge1 = [mesh.vt[faceV.vt] for faceV in faceEdge]
 
     return uvEdge0 == uvEdge1
 
 
 def orientation(a, b, c):
-    """ Computes the orientation of c relative to the line AB """
-    M = [[a[0] - c[0], a[1] - c[1]],
-         [b[0] - c[0], b[1] - c[1]]]
+    """Compute the orientation of c relative to the line AB."""
+    M = [[a[0] - c[0], a[1] - c[1]], [b[0] - c[0], b[1] - c[1]]]
     # Return det(M)
     return M[0][0] * M[1][1] - M[0][1] * M[1][0]
 
@@ -40,6 +39,7 @@ def orientation(a, b, c):
 def edge_is_foldover(mesh, forwards, backwards):
     """
     Check for foldovers in UV space.
+
     Given two triangles (a,b,c) and (a,b,d) the goal is to determine if c and d
     lie on opposite sides of the line passing through ab. This is known as the
     3-point "orientation test".
@@ -128,14 +128,10 @@ def find_seam(mesh):
         face_vertex_start = mesh.f[ edge[0] ][ edge[1][0] ]
         face_vertex_end = mesh.f[ edge[0] ][ edge[1][1] ]
     """
-
-    from numpy import asarray
-    face_position_indices = asarray([[fv.v for fv in face]
-        for face in mesh.f], dtype = int)
-    face_texcoord_indices = asarray([[fv.vt for fv in face]
-        for face in mesh.f], dtype = int)
-    vp = asarray(mesh.v)
-    vt = asarray(mesh.vt)
+    face_position_indices = numpy.asarray(
+        [[fv.v for fv in face] for face in mesh.f], dtype=int)
+    face_texcoord_indices = numpy.asarray(
+        [[fv.vt for fv in face] for face in mesh.f], dtype=int)
 
     # Assume triangles
     assert face_position_indices.shape == face_texcoord_indices.shape
@@ -158,7 +154,8 @@ def find_seam(mesh):
 
     # First find all undirected position edges (collect a canonical orientation
     # of the directed edges).
-    undirected_position_edges = (set((min(i, j), max(i, j)) for i, j in
+    undirected_position_edges = (
+        set((min(i, j), max(i, j)) for i, j in
             directed_position_edge2face_position_index.keys()))
 
     # Now we will iterate over all position edges.
@@ -175,8 +172,8 @@ def find_seam(mesh):
 
         # If it and its opposite exist as directed edges, check if their
         # texture coordinate indices match.
-        if(vp_edge in directed_position_edge2face_position_index and
-        vp_edge[::-1] in directed_position_edge2face_position_index):
+        if (vp_edge in directed_position_edge2face_position_index and
+                vp_edge[::-1] in directed_position_edge2face_position_index):
             forwards = \
                 directed_position_edge2face_position_index[vp_edge]
             backwards = \
@@ -187,11 +184,11 @@ def find_seam(mesh):
 
             # If the texcoord indices are similarly flipped or the edges are
             # equivilant in UV-space.
-            if(all(face_texcoord_indices[forwards] ==
-                face_texcoord_indices[backwards][::-1]) or
-                    edges_equal_in_UV(mesh, forwards, backwards)):
+            if ((face_texcoord_indices[forwards] ==
+                 face_texcoord_indices[backwards][::-1]).all()
+                    or edges_equal_in_UV(mesh, forwards, backwards)):
                 # Check for foldovers in UV space.
-                if(edge_is_foldover(mesh, forwards, backwards)):
+                if (edge_is_foldover(mesh, forwards, backwards)):
                     # Add to a third list of uv foldover edges.
                     seam_foldover_edges.append(forwards)
                 continue
@@ -209,8 +206,9 @@ def find_seam(mesh):
                 directed_position_edge2face_position_index[vp_edge[::-1]])
         else:
             # This should never happen! One of these two must have been seen.
-            assert(vp_edge in directed_position_edge2face_position_index or
-                vp_edge[::-1] in directed_position_edge2face_position_index)
+            assert (
+                vp_edge in directed_position_edge2face_position_index
+                or vp_edge[::-1] in directed_position_edge2face_position_index)
 
     return seam_non_matching, seam_mesh_boundary, seam_foldover_edges
 
@@ -218,7 +216,8 @@ def find_seam(mesh):
 def seam_to_UV(mesh, seam, boundary, foldovers):
     """
     Convert the seam, boundary, and foldovers to be in UV-space.
-    Input  Format:
+
+    Input Format:
         seam      = [[[fi, [fvi0, fvi1]], [fi', [fvi0', fvi1']]], ...]
         boundary  = [ [fi0, [fvi0, fvi1]], ...]
         foldovers = [ [fi0, [fvi0, fvi1]], ...]
@@ -228,11 +227,11 @@ def seam_to_UV(mesh, seam, boundary, foldovers):
           [ [uv0, uv1], ...] )
     """
     uv_seam = [[[mesh.vt[mesh.f[edge[0]][i].vt] for i in edge[1]]
-        for edge in edgePair] for edgePair in seam]
+                for edge in edgePair] for edgePair in seam]
     uv_boundary = [[mesh.vt[mesh.f[edge[0]][i].vt] for i in edge[1]]
-        for edge in boundary]
+                   for edge in boundary]
     uv_foldovers = [[mesh.vt[mesh.f[edge[0]][i].vt] for i in edge[1]]
-        for edge in foldovers]
+                    for edge in foldovers]
     return uv_seam, uv_boundary, uv_foldovers
 
 

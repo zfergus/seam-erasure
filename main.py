@@ -29,30 +29,34 @@ InputTextureFile = recordclass(
 
 def create_parser():
     """ Creates an ArgumentParser for this command line tool. """
-    parser = argparse.ArgumentParser(description = "Erase texture seams to " +
-        "prevent visible seams or tearing in various texture maps (color, " +
-        "normal, displacement, ambient occlusion, etc.)",
+    parser = argparse.ArgumentParser(
+        description=("Erase texture seams to prevent visible seams or tearing "
+                     "in various texture maps (color, normal, displacement, "
+                     "ambient occlusion, etc.)"),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        usage="%(prog)s path/to/input_model path/to/input_texture [-h] " +
-        "[-o path/to/output_texture] [-g] [--sv {none,texture,lerp}] [-d]")
+        usage=("%(prog)s path/to/input_model path/to/input_texture [-h] "
+               "[-o path/to/output_texture] [-g] [--sv {none,texture,lerp}] "
+               "[-d]"))
     parser.add_argument("in_mesh", metavar="path/to/input_model",
-        help="Path to input mesh file.")
+                        help="Path to input mesh file.")
     parser.add_argument("in_texture", metavar="path/to/input_texture",
-        help="Path to input texture image or directory to load all textures " +
-        "from.")
-    parser.add_argument("-o", "--output", metavar="path/to/output_texture",
-        help="Name of output texture or directory to save batch textures.",
-        dest="out_texture")
-    parser.add_argument("-g", "--global", action="store_true",
-        dest="do_global", help="Should the minimization have global effects?")
-    parser.add_argument("--sv", choices=["none", "texture", "lerp"],
-        default="none", dest="sv_method",
-        help="What method should be used to compute the seam value energy?" +
-        "None implies do not use seam value." +
-        "Texture implies use difference in originial texture." +
-        "Lerp implies use linearly interpolated values along the edge.")
-    parser.add_argument("-d", "--data", action="store_true",
-        dest="loadFromData",
+                        help=("Path to input texture image or directory to "
+                              "load all textures from."))
+    parser.add_argument(
+        "-o", "--output", metavar="path/to/output_texture", dest="out_texture",
+        help="Name of output texture or directory to save batch textures.")
+    parser.add_argument(
+        "-g", "--global", action="store_true", dest="do_global",
+        help="Should the minimization have global effects?")
+    parser.add_argument(
+        "--sv", choices=["none", "texture", "lerp"], default="none",
+        dest="sv_method",
+        help=("What method should be used to compute the seam value energy? "
+              "None implies do not use seam value. "
+              "Texture implies use difference in originial texture. "
+              "Lerp implies use linearly interpolated values along the edge."))
+    parser.add_argument(
+        "-d", "--data", action="store_true", dest="loadFromData",
         help="Should the input texture(s) be loaded as data files?")
     return parser
 
@@ -82,7 +86,7 @@ def parse_args(parser=None):
     if(args.out_texture is None):
         if(loadFromDirectory):
             args.out_texture = os.path.normpath(args.in_texture +
-                "/erased") + "/"
+                                                "/erased") + "/"
         else:
             # Split the input texture name by the extension.
             in_path, in_ext = os.path.splitext(args.in_texture)
@@ -100,13 +104,13 @@ def parse_args(parser=None):
                              "directory.")
 
     sv_methods = {"none": seam_erasure.SeamValueMethod.NONE,
-        "texture": seam_erasure.SeamValueMethod.TEXTURE,
-        "lerp": seam_erasure.SeamValueMethod.LERP}
+                  "texture": seam_erasure.SeamValueMethod.TEXTURE,
+                  "lerp": seam_erasure.SeamValueMethod.LERP}
     sv_method = sv_methods[args.sv_method]
 
     if(loadFromDirectory and sv_method == sv_methods["lerp"]):
         parser.error("Unable to perform seam value energy computation using " +
-            "lerp while performing batch texture solving.")
+                     "lerp while performing batch texture solving.")
 
     return (args.in_mesh, args.in_texture, args.out_texture, loadFromDirectory,
             args.loadFromData, sv_method, args.do_global)
@@ -125,7 +129,7 @@ def loadTextures(in_path, loadFromDirectory, loadFromData):
     """
     if(loadFromDirectory):
         files = sorted([f for f in os.listdir(in_path) if
-            os.path.isfile(os.path.join(in_path, f))])
+                        os.path.isfile(os.path.join(in_path, f))])
     else:
         in_path, base = os.path.split(in_path)
         files = [base]
@@ -179,7 +183,7 @@ def saveTextures(outData, textures, out_path, loadFromDirectory):
             textureData = numpy.squeeze(textureData, axis=2)
 
         if(not textureFile.isFloat):
-            textureData = to_uint8(textureData, normalize = False)
+            textureData = to_uint8(textureData, normalize=False)
 
         # Save the solved texture
         if(loadFromDirectory):
@@ -214,17 +218,17 @@ def main():
 
     height, width = textureData.shape[:2]
 
-    isUnbounded = any([tex.isFloat for tex in textures])
     # TODO: Remove this comment for bounds.
-    bounds = None  # (None if isUnbounded else (0, 1))
-    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    energy_fname = ("%s-%s-%senergies.csv" % (
-        os.path.splitext(os.path.basename(in_mesh))[0],
-        os.path.splitext(os.path.basename(in_texture))[0],
-        "global-" if do_global else ""))
+    # isUnbounded = any([tex.isFloat for tex in textures])
+    # bounds = None if isUnbounded else (0, 1)
+    # root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    # energy_fname = ("%s-%s-%senergies.csv" % (
+    #     os.path.splitext(os.path.basename(in_mesh))[0],
+    #     os.path.splitext(os.path.basename(in_texture))[0],
+    #     "global-" if do_global else ""))
 
     logging.info("Model: %s\nTexture: %s\n" % (os.path.basename(in_mesh),
-        os.path.basename(in_texture)))
+                                               os.path.basename(in_texture)))
 
     out = seam_erasure.erase_seam(
         mesh, textureData, sv_method=sv_method, do_global=do_global)
@@ -232,10 +236,11 @@ def main():
     minVal = out.min()
     maxVal = out.max()
 
-    logging.info("Min/Max of solved values:\nMin: %g\nMax: %g\n" % (minVal, maxVal))
+    logging.info("Min/Max of solved values:\nMin: %g\nMax: %g\n" %
+                 (minVal, maxVal))
 
     saveTextures(out.reshape((height, width, -1)), textures, out_texture,
-        loadFromDirectory)
+                 loadFromDirectory)
 
     logging.info("\nTotal Runtime: %.2f seconds" % (time.time() - startTime))
 

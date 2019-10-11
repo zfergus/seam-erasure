@@ -6,6 +6,7 @@ Written by Zachary Ferguson
 """
 
 import itertools
+import logging
 
 import numpy
 import scipy.sparse
@@ -15,7 +16,8 @@ from .bilerp_energy import bilerp_coeffMats
 
 from .seam_intervals import compute_edge_intervals
 from .accumulate_coo import AccumulateCOO
-from .util import *
+from .util import (lerp_UV, surrounding_pixels,
+                   globalEdge_to_local, pairwise, QuadEnergy)
 
 import warnings
 warnings.simplefilter('ignore', scipy.sparse.SparseEfficiencyWarning)
@@ -24,11 +26,17 @@ warnings.simplefilter('ignore', scipy.sparse.SparseEfficiencyWarning)
 def E_ab(a, b, edge, width, height):
     """
     Calculate the energy in the inverval a to b.
-    Parameters:
-        a, b - interval to integrate over
-        edge - the edge in UV-space to interpolate
-        width, height - texture's dimensions
-    Returns: Energy matrix for the interval
+
+    Parameters
+    ----------
+    a, b - interval to integrate over
+    edge - the edge in UV-space to interpolate
+    width, height - texture's dimensions
+
+    Returns
+    -------
+    Energy matrix for the interval
+
     """
 
     # Get the UV coordinates of the edge pair, swaping endpoints of one edge
@@ -52,8 +60,8 @@ def E_ab(a, b, edge, width, height):
     # E is Nx1 * 1xN = NxN
     def term(M, n):
         """
-            Compute the integral term with constant matrix (M) and
-            power n after integration.
+        Compute the integral term with constant matrix (M) and power n after
+        integration.
         """
         M *= (1. / n * (b**n - a**n))  # Prevent unnecessary copying
         return M
@@ -78,7 +86,7 @@ def E_ab(a, b, edge, width, height):
 
 
 def E_edge(edge, width, height, edge_len):
-    """ Compute the energy coefficient matrix over a single edge pair. """
+    """Compute the energy coefficient matrix over a single edge pair."""
     intervals = sorted(list(compute_edge_intervals(edge, width, height)))
 
     N = width * height
@@ -103,6 +111,7 @@ def E_edge(edge, width, height, edge_len):
 def E_total(mesh, edges, width, height, textureVec):
     """
     Calculate the energy coeff matrix for a width x height texture.
+
     Inputs:
         mesh - the model in OBJ format
         edges - edges of the model in (fi, (fv0, fv1)) format
@@ -137,4 +146,4 @@ def E_total(mesh, edges, width, height, textureVec):
     SV = (E / sum_edge_lens).tocsc()
     p0 = textureVec
     return QuadEnergy(SV, scipy.sparse.csc_matrix(-SV.dot(p0)),
-        scipy.sparse.csc_matrix(p0.T.dot(SV.dot(p0))))
+                      scipy.sparse.csc_matrix(p0.T.dot(SV.dot(p0))))

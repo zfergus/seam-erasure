@@ -38,13 +38,12 @@ skip should be True for every grid location we have a known good value for.
 
 from __future__ import division
 
-import collections
+import logging
 
 import numpy
-from numpy import *
 from scipy import sparse
 
-from .util import QuadEnergy, rowcol_to_index
+from .util import QuadEnergy
 
 
 def grad_and_mass(rows, cols, mask=None, skip=None):
@@ -72,11 +71,11 @@ def grad_and_mass(rows, cols, mask=None, skip=None):
     assert rows > 0 and cols > 0
 
     if mask is not None:
-        mask = asarray(mask, dtype=bool)
+        mask = numpy.asarray(mask, dtype=bool)
         assert mask.shape == (rows, cols)
 
     if skip is not None:
-        skip = asarray(skip, dtype=bool)
+        skip = numpy.asarray(skip, dtype=bool)
         assert skip.shape == (rows, cols)
 
     # The number of derivatives in the +row direction is cols * (rows - 1),
@@ -142,7 +141,8 @@ def grad_and_mass(rows, cols, mask=None, skip=None):
     # rowI is dependent on the number of output rows.
     rowI = numpy.tile(numpy.arange(output_row), 2)
 
-    G = sparse.coo_matrix((vals, (rowI, colJ)), shape=(output_row, rows * cols))
+    G = sparse.coo_matrix((vals, (rowI, colJ)),
+                          shape=(output_row, rows * cols))
     assert G.shape == (output_row, rows * cols)
 
     M = coo_diag(mass)
@@ -196,15 +196,15 @@ def dirichlet_energy(rows, cols, y, mask=None, skip=None):
     L = (G.T.dot(M.dot(G)))
     Lp = G.T.dot(S.dot(M.dot(G)))
 
-    return QuadEnergy(
-        L, -sparse.csc_matrix(Lp.dot(y)), sparse.csc_matrix(y.T.dot(Lp.dot(y))))
+    return QuadEnergy(L, -sparse.csc_matrix(Lp.dot(y)),
+                      sparse.csc_matrix(y.T.dot(Lp.dot(y))))
 
 
 def coo_diag(vals):
     try:
-        indices = arange(vals.shape[0])
+        indices = numpy.arange(vals.shape[0])
     except Exception:
-        indices = arange(len(vals))
+        indices = numpy.arange(len(vals))
     return sparse.coo_matrix((vals, (indices, indices)))
 
 
@@ -213,7 +213,7 @@ def test_mask():
 
     shape = (5, 5)
 
-    mask = ones(shape, dtype=bool)
+    mask = numpy.ones(shape, dtype=bool)
     mask[2, 2] = False
 
     G, M, S = grad_and_mass(shape[0], shape[1], mask=mask)
@@ -228,20 +228,21 @@ def test_mask():
 
 
 if __name__ == '__main__':
+    from seam_erasure import display_quadratic_energy
+
     # test_mask()
     sizes = [(4, 4, 1), (10, 10, 1), (100, 100, 1), (1000, 1000, 1)]
     for size in sizes:
-        logging.info("Texture Size: %s" % (size,))
+        logging.info("Texture Size: %s" % (size, ))
         width, height, depth = size
         N = width * height
 
-        import numpy
         diriTex = numpy.linspace(0, 1, width)
-        diriTex = numpy.tile(numpy.repeat(diriTex, depth).reshape(
-            (1, width, depth)), (width, 1, 1))
+        diriTex = numpy.tile(
+            numpy.repeat(diriTex, depth).reshape((1, width, depth)),
+            (width, 1, 1))
         diriTex = diriTex.reshape(N, -1)
         inTex = numpy.zeros((N, depth))
         # import pdb; pdb.set_trace()
         coeff = dirichlet_energy(height, width, inTex)
-        from seam_erasure import display_quadratic_energy
         display_quadratic_energy(coeff, inTex, diriTex, "Dirichlet")
