@@ -5,13 +5,16 @@ seam value energy.
 Written by Zachary Ferguson
 """
 
+import itertools
+
 import numpy
 import scipy.sparse
-import itertools
+from tqdm import tqdm
 
 from .bilerp_energy import bilerp_coeffMats
 
 from .seam_intervals import compute_edge_intervals
+from .accumulate_coo import AccumulateCOO
 from .util import *
 
 import warnings
@@ -30,15 +33,15 @@ def E_ab(a, b, mesh, edge, width, height):
     """
     # Get the UV coordinates of the edge pair, swaping endpoints of one edge
     uv0, uv1 = [mesh.vt[mesh.f[edge[0]][i].vt] for i in edge[1]]
-    x0, x1  = [numpy.array(mesh.vc[mesh.f[edge[0]][i].v]).reshape(1, -1)
-        for i in edge[1]]
+    x0, x1 = [numpy.array(mesh.vc[mesh.f[edge[0]][i].v]).reshape(1, -1)
+              for i in edge[1]]
 
     # Determine the midpoint of the interval in UV-space
     mid_uv = lerp_UV((a + b) / 2., uv0, uv1)
 
     # Determine surrounding pixel indices
-    (p00, p10, p01, p11)  = surrounding_pixels(mid_uv, width, height,
-        as_index = True)
+    (p00, p10, p01, p11) = surrounding_pixels(
+        mid_uv, width, height, as_index=True)
 
     nPixels = width * height
 
@@ -54,7 +57,7 @@ def E_ab(a, b, mesh, edge, width, height):
         Compute the integral term with constant matrix (M) and power n after
         integration.
         """
-        M *= (1. / n * (b**n - a**n)) # Prevent unnecessary copying
+        M *= (1. / n * (b**n - a**n))  # Prevent unnecessary copying
         return M
 
     # Product of cooefficents (4x4)
@@ -65,36 +68,37 @@ def E_ab(a, b, mesh, edge, width, height):
     BC = B.T.dot(C)
     CC = C.T.dot(C)
 
-    values = (term(AA, 5.) + term(AB + AB.T, 4.) + term(AC + AC.T + BB, 3.) +
-         term(BC + BC.T, 2.) + term(CC, 1.))
+    values = (term(AA, 5.) + term(AB + AB.T, 4.) + term(AC + AC.T + BB, 3.)
+              + term(BC + BC.T, 2.) + term(CC, 1.))
 
     ijs = numpy.array(list(itertools.product((p00, p10, p01, p11), repeat=2)))
 
-    Q = scipy.sparse.coo_matrix((values.ravel(), ijs.reshape(-1, 2).T),
-        shape = (nPixels, nPixels))
+    Q = scipy.sparse.coo_matrix(
+        (values.ravel(), ijs.reshape(-1, 2).T), shape=(nPixels, nPixels))
 
     # Difference in endpoints
     x1_x0 = x1 - x0
 
     # A, B, C are 1xN and x0, x1 are 1xD
     # L is Nx1 * 1xD = NxD
-    values = (term(A.T.dot(x1_x0), 4.0) +
-        term(A.T.dot(x0) + B.T.dot(x1_x0), 3.0) +
-        term(B.T.dot(x0) + C.T.dot(x1_x0), 2.0) +
-        term(C.T.dot(x0), 1.0))
+    values = (term(A.T.dot(x1_x0), 4.0)
+              + term(A.T.dot(x0) + B.T.dot(x1_x0), 3.0)
+              + term(B.T.dot(x0) + C.T.dot(x1_x0), 2.0)
+              + term(C.T.dot(x0), 1.0))
 
     ijs = numpy.array(list(
         itertools.product((p00, p10, p01, p11), range(x0.shape[1]))))
 
-    L = scipy.sparse.coo_matrix((values.ravel(), ijs.reshape(-1, 2).T),
-        shape = (nPixels, x0.shape[1]))
+    L = scipy.sparse.coo_matrix(
+        (values.ravel(), ijs.reshape(-1, 2).T), shape=(nPixels, x0.shape[1]))
 
     # x0, x1 are 1xD
     # C is Dx1 * 1xD = DxD
     x1_x0x0 = x1_x0.T.dot(x0)
 
-    C = (term(x1_x0.T.dot(x1_x0), 3.0) + term(x1_x0x0 + x1_x0x0.T, 2.0) +
-        term(x0.T.dot(x0), 1.0))
+    C = (term(x1_x0.T.dot(x1_x0), 3.0)
+         + term(x1_x0x0 + x1_x0x0.T, 2.0)
+         + term(x0.T.dot(x0), 1.0))
 
     return Q, L, C
 
@@ -116,7 +120,6 @@ def E_edge(mesh, edge, width, height, edge_len):
     N = width * height
     depth = len(mesh.vc[0])
 
-    from accumulate_coo import AccumulateCOO
     Q_edge = AccumulateCOO()
     L_edge = AccumulateCOO()
     C_edge = scipy.sparse.csc_matrix((depth, depth))
@@ -148,25 +151,24 @@ def E_total(mesh, edges, width, height):
     Output:
         Returns the quadtratic term matrix for the seam value energy.
     """
-    print("Building Seam Value of Lerp Energy Matrix:")
-
     # Check the model contains vertex colors.
     if(len(mesh.vc) != len(mesh.v)):
-        raise ValueError("Mesh does not contain an equal number vertex " +
-            "colors and vertices.")
+        raise ValueError(
+            "Mesh does not contain an equal number vertex colors and vertices.")
 
     # Sum up the energy coefficient matrices for all the edge pairs
     N = width * height
     depth = len(mesh.vc[0])
 
-    from accumulate_coo import AccumulateCOO
     Q = AccumulateCOO()
     L = AccumulateCOO()
     C = scipy.sparse.csc_matrix((depth, depth))
 
     sum_edge_lens = 0.0
-    for i, edge in enumerate(edges):
-        print_progress(i / float(len(edges)))
+    desc = "Building Seam Value of Lerp Energy Matrix"
+    disable_pbar = logging.getLogger().getEffectiveLevel() > logging.INFO
+    for i, edge in enumerate(tqdm(
+            edges, unit="edges", disable=disable_pbar, desc=desc)):
         # Calculate the 3D edge length
         verts = [numpy.array(mesh.v[mesh.f[edge[0]][i].v]) for i in edge[1]]
         edge_len = numpy.linalg.norm(verts[1] - verts[0])
@@ -183,9 +185,7 @@ def E_total(mesh, edges, width, height):
     Q = Q.total((N, N))
     L = L.total((N, depth))
 
-    print_progress(1.0)
-    print("\n")
-
     # Divide by the total edge length in 3D
     return QuadEnergy((Q / sum_edge_lens).tocsc(),
-        -L / sum_edge_lens, C / sum_edge_lens)
+                      -L / sum_edge_lens,
+                      C / sum_edge_lens)

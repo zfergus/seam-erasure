@@ -9,6 +9,7 @@ import os
 import sys
 import argparse
 import time
+import logging
 
 from recordclass import recordclass
 
@@ -148,7 +149,6 @@ def loadTextures(in_path, loadFromDirectory, loadFromData):
             InputTextureFile(f, data.shape[2], isFloatTexture, isDataFile))
         textureData = data if textureData is None else (
             numpy.concatenate((textureData, data), axis=2))
-    print()
 
     return textureData, textures
 
@@ -195,10 +195,12 @@ def saveTextures(outData, textures, out_path, loadFromDirectory):
 
         current_depth = next_depth
 
-########################################
-# CMD-line tool for getting filenames. #
-########################################
-if __name__ == '__main__':
+
+def main():
+    logging.basicConfig(
+        # format="[%(levelname)s] [%(asctime)s] %(message)s",
+        format="%(message)s",
+        datefmt="%m/%d/%Y %I:%M:%S %p", level=logging.INFO)
     (in_mesh, in_texture, out_texture, loadFromDirectory, loadFromData,
         sv_method, do_global) = parse_args()
 
@@ -214,30 +216,29 @@ if __name__ == '__main__':
 
     isUnbounded = any([tex.isFloat for tex in textures])
     # TODO: Remove this comment for bounds.
-    bounds = None # (None if isUnbounded else (0, 1))
+    bounds = None  # (None if isUnbounded else (0, 1))
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     energy_fname = ("%s-%s-%senergies.csv" % (
         os.path.splitext(os.path.basename(in_mesh))[0],
         os.path.splitext(os.path.basename(in_texture))[0],
         "global-" if do_global else ""))
-    # out_file = open(os.path.join(root, "energies", energy_fname), "w")
-    out_file = None
 
-    print("Model: %s\nTexture: %s\n" % (os.path.basename(in_mesh),
-        os.path.basename(in_texture)), file=out_file)
+    logging.info("Model: %s\nTexture: %s\n" % (os.path.basename(in_mesh),
+        os.path.basename(in_texture)))
 
-    out = seam_erasure.erase_seam(mesh, textureData,
-        display_energy_file=out_file, sv_method=sv_method, do_global=do_global)
+    out = seam_erasure.erase_seam(
+        mesh, textureData, sv_method=sv_method, do_global=do_global)
 
     minVal = out.min()
     maxVal = out.max()
 
-    print("Min/Max of solved values:\nMin: %g\nMax: %g\n" % (minVal, maxVal))
+    logging.info("Min/Max of solved values:\nMin: %g\nMax: %g\n" % (minVal, maxVal))
 
     saveTextures(out.reshape((height, width, -1)), textures, out_texture,
         loadFromDirectory)
 
-    # print("Runtime: %g" % (time.time() - startTime), file=out_file)
-    # out_file.close()
+    logging.info("\nTotal Runtime: %.2f seconds" % (time.time() - startTime))
 
-    print("\nTotal Runtime: %.2f seconds" % (time.time() - startTime))
+
+if __name__ == "__main__":
+    main()

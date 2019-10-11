@@ -5,13 +5,16 @@ seam value energy.
 Written by Zachary Ferguson
 """
 
+import itertools
+
 import numpy
 import scipy.sparse
-import itertools
+from tqdm import tqdm
 
 from .bilerp_energy import bilerp_coeffMats
 
 from .seam_intervals import compute_edge_intervals
+from .accumulate_coo import AccumulateCOO
 from .util import *
 
 import warnings
@@ -35,8 +38,8 @@ def E_ab(a, b, edge, width, height):
     mid_uv = lerp_UV((a + b) / 2., uv0, uv1)
 
     # Determine surrounding pixel indices
-    (p00, p10, p01, p11)  = surrounding_pixels(mid_uv, width, height,
-        as_index=True)
+    p00, p10, p01, p11 = surrounding_pixels(
+        mid_uv, width, height, as_index=True)
 
     nPixels = width * height
 
@@ -52,7 +55,7 @@ def E_ab(a, b, edge, width, height):
             Compute the integral term with constant matrix (M) and
             power n after integration.
         """
-        M *= (1. / n * (b**n - a**n)) # Prevent unnecessary copying
+        M *= (1. / n * (b**n - a**n))  # Prevent unnecessary copying
         return M
 
     # Product of differences (8x8)
@@ -63,13 +66,13 @@ def E_ab(a, b, edge, width, height):
     BC = B.T.dot(C)
     CC = C.T.dot(C)
 
-    values = (term(AA, 5.) + term(AB + AB.T, 4.) + term(AC + AC.T + BB, 3.) +
-         term(BC + BC.T, 2.) + term(CC, 1.))
+    values = (term(AA, 5.) + term(AB + AB.T, 4.) + term(AC + AC.T + BB, 3.)
+              + term(BC + BC.T, 2.) + term(CC, 1.))
 
     ijs = numpy.array(list(itertools.product((p00, p10, p01, p11), repeat=2)))
 
-    E = scipy.sparse.coo_matrix((values.ravel(), ijs.reshape(-1, 2).T),
-        shape = (nPixels, nPixels))
+    E = scipy.sparse.coo_matrix(
+        (values.ravel(), ijs.reshape(-1, 2).T), shape=(nPixels, nPixels))
 
     return E
 
@@ -82,7 +85,6 @@ def E_edge(edge, width, height, edge_len):
 
     # Space for the matrix.
     # E_edge = scipy.sparse.coo_matrix((N, N))
-    from accumulate_coo import AccumulateCOO
     E_edge = AccumulateCOO()
 
     # Solve for the energy coeff matrix over the edge pair
@@ -109,18 +111,16 @@ def E_total(mesh, edges, width, height, textureVec):
     Output:
         QuadEnergy for the total seam value energy.
     """
-    print("Building Seam Value Energy Matrix:")
-
     # Sum up the energy coefficient matrices for all the edge pairs
     N = width * height
 
     # E = scipy.sparse.coo_matrix((N, N))
-    from accumulate_coo import AccumulateCOO
     E = AccumulateCOO()
 
     sum_edge_lens = 0.0
-    for i, edge in enumerate(edges):
-        print_progress(i / float(len(edges)))
+    disable_pbar = logging.getLogger().getEffectiveLevel() > logging.INFO
+    for i, edge in enumerate(tqdm(edges, unit="edges", disable=disable_pbar,
+                                  desc="Building Seam Value Energy Matrix")):
         face = mesh.f[edge[0]]
         # Calculate the 3D edge length
         verts = [numpy.array(mesh.v[face[i].v]) for i in edge[1]]
@@ -132,9 +132,6 @@ def E_total(mesh, edges, width, height, textureVec):
         E.add(E_edge(uv_edge, width, height, edge_len))
 
     E = E.total((N, N))
-
-    print_progress(1.0)
-    print("\n")
 
     # Divide by the total edge length in 3D
     SV = (E / sum_edge_lens).tocsc()

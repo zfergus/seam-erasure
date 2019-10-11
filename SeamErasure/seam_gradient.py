@@ -4,9 +4,12 @@ Seam gradient energy to get a better gradient energy across the seam.
 Written by Zachary Ferguson
 """
 
+import itertools
+import logging
+
 import numpy
 import scipy.sparse
-import itertools
+from tqdm import tqdm
 
 from .accumulate_coo import AccumulateCOO
 from .seam_intervals import compute_edgePair_intervals
@@ -21,10 +24,10 @@ def A_Mat(st_edge, gamma_perp, p00, p10, p01, p11, nPixels):
     c = gamma_perp[1] * (st_edge[1][0] - st_edge[0][0]) + \
         gamma_perp[0] * (st_edge[1][1] - st_edge[0][1])
     coeffs = numpy.zeros((1, nPixels))
-    coeffs[0, p00] =  c
+    coeffs[0, p00] = c
     coeffs[0, p10] = -c
     coeffs[0, p01] = -c
-    coeffs[0, p11] =  c
+    coeffs[0, p11] = c
     return coeffs
 
 
@@ -34,10 +37,10 @@ def B_Mat(st_edge, gamma_perp, p00, p10, p01, p11, nPixels):
     c2 = gamma_perp[0]
     c3 = gamma_perp[1]
     coeffs = numpy.zeros((1, nPixels))
-    coeffs[0, p00] =  c1 - c2 - c3
+    coeffs[0, p00] = c1 - c2 - c3
     coeffs[0, p10] = -c1 + c2
-    coeffs[0, p01] = -c1      + c3
-    coeffs[0, p11] =  c1
+    coeffs[0, p01] = -c1 + c3
+    coeffs[0, p11] = c1
     return coeffs
 
 
@@ -73,22 +76,22 @@ def E_ab(a, b, mesh, edgePair, width, height):
     """
 
     # Get the UV coordinates of the edge pair, swaping endpoints of one edge
-    ((uv0, uv1), (uv1p, uv0p)) = [[mesh.vt[mesh.f[edge[0]][i].vt]
-        for i in edge[1]] for edge in edgePair]
+    ((uv0, uv1), (uv1p, uv0p)) = [
+        [mesh.vt[mesh.f[edge[0]][i].vt] for i in edge[1]] for edge in edgePair]
 
     # Determine the midpoint of the interval in UV-space
-    mid_uv   = lerp_UV((a + b) / 2., uv0, uv1)
+    mid_uv = lerp_UV((a + b) / 2., uv0, uv1)
     mid_uv_p = lerp_UV((a + b) / 2., uv0p, uv1p)
 
     # Determine surrounding pixel indices
-    (p00,  p10,  p01,  p11)  = surrounding_pixels(mid_uv, width, height,
-        as_index = True)
-    (p00p, p10p, p01p, p11p) = surrounding_pixels(mid_uv_p, width, height,
-        as_index = True)
+    (p00,  p10,  p01,  p11) = surrounding_pixels(
+        mid_uv, width, height, as_index=True)
+    (p00p, p10p, p01p, p11p) = surrounding_pixels(
+        mid_uv_p, width, height, as_index=True)
 
     nPixels = width * height
 
-    st_edge   = globalEdge_to_local(uv0, uv1, p00, width, height)
+    st_edge = globalEdge_to_local(uv0, uv1, p00, width, height)
     st_edge_p = globalEdge_to_local(uv0p, uv1p, p00p, width, height)
 
     perp_edge = inside_perpendicular_vector(mesh, edgePair[0])
@@ -106,7 +109,7 @@ def E_ab(a, b, mesh, edgePair, width, height):
         Compute the integral term with constant matrix (M) and
         power n after integration.
         """
-        M *= (1. / n * (b**n - a**n)) # Prevent unnecessary copying
+        M *= (1. / n * (b**n - a**n))  # Prevent unnecessary copying
         return M
 
     # Sum of matrices (1x8)
@@ -120,14 +123,13 @@ def E_ab(a, b, mesh, edgePair, width, height):
 
     values = term(AA, 3.) + term(AB + AB.T, 2.) + term(BB, 1.)
 
-    ijs = numpy.array(list(
-        itertools.product((p00, p10, p01, p11, p00p, p10p, p01p, p11p),
-        repeat = 2)))
+    ijs = numpy.array(list(itertools.product(
+        (p00, p10, p01, p11, p00p, p10p, p01p, p11p), repeat=2)))
 
     # import pdb; pdb.set_trace()
 
-    E = scipy.sparse.coo_matrix((values.ravel(), ijs.reshape(-1, 2).T),
-        shape = (nPixels, nPixels))
+    E = scipy.sparse.coo_matrix(
+        (values.ravel(), ijs.reshape(-1, 2).T), shape=(nPixels, nPixels))
 
     return E
 
@@ -144,7 +146,7 @@ def E_edgePair(mesh, edgePair, width, height, edge_len):
         Returns the energy coefficient matrix over a single edge pair.
     """
     uv_edgePair = [[mesh.vt[mesh.f[edge[0]][i].vt] for i in edge[1]]
-        for edge in edgePair]
+                   for edge in edgePair]
     intervals = compute_edgePair_intervals(uv_edgePair, width, height)
 
     N = width * height
@@ -181,8 +183,6 @@ def E_total(mesh, seam, width, height, depth, edge_lens):
     Output:
         Returns the quadtratic term matrix for the seam gradient.
     """
-    print("Building Seam Gradient Matrix:")
-
     # Sum up the energy coefficient matrices for all the edge pairs
     N = width * height
 
@@ -190,17 +190,19 @@ def E_total(mesh, seam, width, height, depth, edge_lens):
     E = AccumulateCOO()
 
     sum_edge_lens = 0.0
-    for i, (edgePair, edge_len) in enumerate(zip(seam, edge_lens)):
-        print_progress(i / float(len(seam)))
+
+    desc = "Building Seam Gradient Matrix"
+    disable_pbar = logging.getLogger().getEffectiveLevel() > logging.INFO
+    for i, (edgePair, edge_len) in enumerate(zip(tqdm(seam, unit="edge pairs",
+                                                      desc=desc,
+                                                      disable=disable_pbar),
+                                                 edge_lens)):
         sum_edge_lens += edge_len
         E.add(E_edgePair(mesh, edgePair, width, height, edge_len))
 
     E = E.total((N, N))
 
-    print_progress(1.0)
-    print("\n")
-
     # Divide by the total edge length in 3D
     return QuadEnergy((E / sum_edge_lens).tocsc(),
-        scipy.sparse.csc_matrix((N, depth)),
-        scipy.sparse.csc_matrix((depth, depth)))
+                      scipy.sparse.csc_matrix((N, depth)),
+                      scipy.sparse.csc_matrix((depth, depth)))

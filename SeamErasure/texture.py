@@ -5,6 +5,7 @@ Written by Zachary Ferguson
 
 import os
 import sys
+import logging
 
 import math
 
@@ -13,13 +14,13 @@ from PIL import Image
 
 def load_texture(fname):
     """ Load a PIL Image with name fname. """
-    print("Loading: %s" % fname)
+    logging.info("Loading Texture: %s" % os.path.abspath(fname))
     return Image.open(fname).transpose(Image.FLIP_TOP_BOTTOM)
 
 
 def save_texture(data, fname):
     """ Save a PIL Image with name fname. """
-    print("Saving: %s" % fname)
+    logging.info("Saving Texture: %s" % os.path.abspath(fname))
     texture = Image.fromarray(data).transpose(Image.FLIP_TOP_BOTTOM)
     texture.save(fname)
 

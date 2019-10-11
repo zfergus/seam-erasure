@@ -7,7 +7,9 @@ Author: Yotam Gingold <yotam (strudel) yotamgingold.com>
 License: Public Domain [CC0](http://creativecommons.org/publicdomain/zero/1.0/)
 """
 
-from __future__ import print_function, division
+from __future__ import division
+
+import logging
 
 import numpy
 
@@ -233,9 +235,10 @@ def seam_to_UV(mesh, seam, boundary, foldovers):
         for edge in foldovers]
     return uv_seam, uv_boundary, uv_foldovers
 
+
 if __name__ == "__main__":
     import obj_reader
     mesh = obj_reader.load_obj("../models/cube.obj")
     seam_fast = find_seam(mesh)
-    print("find_seam_fast.find_seam():")
-    print(seam_fast)
+    logging.info("find_seam_fast.find_seam():")
+    logging.info(seam_fast)

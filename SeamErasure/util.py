@@ -8,19 +8,19 @@ from __future__ import print_function
 
 import sys
 import time
-import math
 import itertools
-import numpy
+import logging
 
+import numpy
 from recordclass import recordclass
 
 ######################################
 # Record classes for neccessary data #
 ######################################
-UV    = recordclass('UV', ['u', 'v'])
+UV = recordclass('UV', ['u', 'v'])
 Pixel = recordclass('Pixel', ['x', 'y'])
-XY    = recordclass('XY', ['x', 'y'])
-XYZ   = recordclass('XYZ', ['x', 'y', 'z'])
+XY = recordclass('XY', ['x', 'y'])
+XYZ = recordclass('XYZ', ['x', 'y', 'z'])
 
 # Quadtratic energy: x.T @ Q @ x + 2 * x.T @ L + C = 0
 QuadEnergy = recordclass('QuadraticEnergy', ['Q', 'L', 'C'])
@@ -72,16 +72,16 @@ def lerp_XY(t, xy0, xy1):
     return XY(*lerpPair(t, xy0, xy1))
 
 
-def UV_to_XY(uv, width, height, is_clamped = False):
+def UV_to_XY(uv, width, height, is_clamped=False):
     """
     Converts the given UV to XY coordinates
     uv is defined in terms of GPU UV space.
     """
     # s*width - 0.5; t*height - 0.5
-    xy = XY(x = uv.u * width - 0.5, y = uv.v * height - 0.5)
+    xy = XY(x=uv.u * width - 0.5, y=uv.v * height - 0.5)
 
     if is_clamped:
-        xy = (numpy.clip(xy[0], 0, max(0, width  - 1)),
+        xy = (numpy.clip(xy[0], 0, max(0, width - 1)),
               numpy.clip(xy[1], 0, max(0, height - 1)))
     return xy
 
@@ -98,7 +98,7 @@ def globalUV_to_local(uv, minX, minY, width, height):
     uv is defined in terms of GPU UV space.
     """
     x, y = UV_to_XY(uv, width, height, True)
-    return UV(u = x - minX, v = y - minY)
+    return UV(u=x - minX, v=y - minY)
 
 
 def globalEdge_to_local(uv0, uv1, minI, width, height):
@@ -113,7 +113,7 @@ def globalEdge_to_local(uv0, uv1, minI, width, height):
             for uv in (uv0, uv1)]
 
 
-def surrounding_pixels(uv, w, h, as_index = False, as_tuple = False):
+def surrounding_pixels(uv, w, h, as_index=False, as_tuple=False):
     """
     Determine the surrounding pixels of the given point at (u,v).
     uv is defined in terms of GPU UV space.
@@ -123,21 +123,21 @@ def surrounding_pixels(uv, w, h, as_index = False, as_tuple = False):
     assert not(as_index and as_tuple)
 
     # Convert from GPU UV coordinates to XY coordinates
-    (x, y) = UV_to_XY(uv, w, h, is_clamped = True)
+    (x, y) = UV_to_XY(uv, w, h, is_clamped=True)
 
     # Convert from XY to Pixel coordinates
-    px = int(min(max(0, math.floor(x)), w - 2)) # X in Range(0,w-1)
-    py = int(min(max(0, math.floor(y)), h - 2)) # Y in Range(0,h-1)
+    px = int(min(max(0, numpy.floor(x)), w - 2))  # X in Range(0,w-1)
+    py = int(min(max(0, numpy.floor(y)), h - 2))  # Y in Range(0,h-1)
 
-    p00 = Pixel(x = px, y = py)
+    p00 = Pixel(x=px, y=py)
 
-    px = int(min(max(0, math.floor(x) + 1), w - 1)) # X in Range(0,w-1)
-    py = int(min(max(0, math.floor(y) + 1), h - 1)) # Y in Range(0,h-1)
+    px = int(min(max(0, numpy.floor(x) + 1), w - 1))  # X in Range(0,w-1)
+    py = int(min(max(0, numpy.floor(y) + 1), h - 1))  # Y in Range(0,h-1)
 
-    p11 = Pixel(x = px, y = py)
+    p11 = Pixel(x=px, y=py)
 
     # Create tuple of soronding pixels in Pixel Space
-    ps = (p00, Pixel(x = p11.x, y = p00.y), Pixel(x = p00.x, y = p11.y), p11)
+    ps = (p00, Pixel(x=p11.x, y=p00.y), Pixel(x=p00.x, y=p11.y), p11)
 
     # If requested, convert from Pixel space to 1D index space
     if as_index:
@@ -152,54 +152,22 @@ def range_min_max(a, b):
     return range(int(min(a, b)), int(max(a, b)))
 
 
-def print_dots(time_delta = 1.0):
+def print_dots(time_delta=1.0):
     """
     Print out a dot every time_delta seconds.
     Loop after three dots.
     """
     dot_count = 0
+    disable_pbar = logging.getLogger().getEffectiveLevel() > logging.INFO
     while True:
-        dot_count = (dot_count % 3) + 1
-        print(("." * dot_count) + (" " * 3), end = "\r")
-        sys.stdout.flush()
+        if(logging.getLogger().getEffectiveLevel() <= logging.INFO):
+            dot_count = (dot_count % 3) + 1
+            print(("." * dot_count) + (" " * 3), end="\r")
+            sys.stdout.flush()
         time.sleep(time_delta)
 
 
-def print_progress(percent):
-    """
-    Prints a dot followed by the given percentage.
-    Given value should be a decimal in range [0, 1].
-    """
-    print("\r%.2f%%" % (percent * 100), end = "")
-    sys.stdout.flush()
-
-
-def print_clear_line(line_length = 80):
-    """ Clear the current line with 80 spaces followed by a carage return. """
-    print("\r" + (" " * line_length) + "\r", end = "")
-
-
-# !!! These functions are not useful !!!
-# def texUV_to_gpuUV(uv, width, height):
-#     """ Convert from the Texture UV space to GPU/OpenGL UV space. """
-#     u = uv.u - (uv.u / float(width)) + 0.5 / width
-#     v = uv.v - (uv.v / float(height)) + 0.5 / height
-#     return UV(u = u, v = v)
-#
-#
-# def texSeam_to_gpuUV(seam, width, height):
-#     """ Convert a texture seam to GPU/OpenGL UV space. """
-#     gpu_seam = list()
-#     for edgePair in seam:
-#         gpu_edgePair = list()
-#         for edge in edgePair:
-#             gpu_edgePair.append(
-#                 [texUV_to_gpuUV(uv, width, height) for uv in edge])
-#         gpu_seam.append(gpu_edgePair)
-#     return gpu_seam
-
-
-def verts_equal(v0, v1, epsilon = 1e-8):
+def verts_equal(v0, v1, epsilon=1e-8):
     """
     Test if two given vertices are equal within a certain epsilon.
     WARNING:
@@ -237,7 +205,7 @@ def is_counterclockwise(v0, v1, v2):
 
 
 # Convert back to image format
-def to_uint8(data, normalize = False):
+def to_uint8(data, normalize=False):
     """ Convert the data in a floating-point vector to unsigned bytes. """
     # Normilize the solved values.
     if(normalize):

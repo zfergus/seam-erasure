@@ -4,10 +4,13 @@ Loads an Wavefront OBJ file into a OBJ recordclass.
 Written by Yotam Gingold; Zachary Ferguson
 """
 
-from __future__ import print_function, division
-from recordclass import recordclass
+from __future__ import division
+
+import os
+import logging
 
 import numpy
+from recordclass import recordclass
 
 from .util import UV, XYZ
 
@@ -66,7 +69,7 @@ def parse_obj(obj_file, filename=None):
 def load_obj(filename):
     """ Load a Wavefront OBJ file with the given filename.  """
 
-    print("Loading:", filename)
+    logging.info("Loading OBJ: %s" % os.path.abspath(filename))
 
     with open(filename) as lines:
         return parse_obj(lines, filename)
