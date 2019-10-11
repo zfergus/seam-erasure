@@ -5,7 +5,7 @@ Reads and writes weight data files.
 !!! Weight data files must be in Image row ordering (0, 0) in the top-left. !!!
 """
 
-from __future__ import print_function, division
+from __future__ import division
 
 from numpy import *
 import gzip
@@ -66,12 +66,12 @@ def read_tex_from_path(path):
             values where weights are zero in all channels.
     '''
 
-    print('+ Loading:', path)
+    logging.info('+ Loading:', path)
 
     with file(path, 'rb') as f:
         result, mask = read_tex_from_path(f)
 
-    print('- Loaded:', path)
+    logging.info('- Loaded:', path)
 
     return result, mask
 
@@ -109,12 +109,12 @@ def write_tex_to_path(path, data):
         data: width-by-height-by-#channels numpy float32 array of data
     '''
 
-    print('+ Saving:', path)
+    logging.info('+ Saving:', path)
 
     with file(path, 'wb') as f:
         write_tex_to_file(f, data)
 
-    print('- Saved:', path)
+    logging.info('- Saved:', path)
 
 
 def normalize_data(data, mask = None):
@@ -172,12 +172,12 @@ if __name__ == '__main__':
     del diff
 
     total_abs_diff = abs_diff.sum()
-    print('Total absolute difference:', total_abs_diff)
-    print('Average absolute difference:',
+    logging.info('Total absolute difference:', total_abs_diff)
+    logging.info('Average absolute difference:',
           total_abs_diff / prod(abs_diff.shape))
-    print('Median absolute difference:', median(abs_diff))
-    print('Maximum absolute difference:', abs_diff.max())
-    print('Minimum absolute difference:', abs_diff.min())
+    logging.info('Median absolute difference:', median(abs_diff))
+    logging.info('Maximum absolute difference:', abs_diff.max())
+    logging.info('Minimum absolute difference:', abs_diff.min())
 
     # difference, squared:
     # abs_diff2 = abs_diff**2
@@ -188,5 +188,5 @@ if __name__ == '__main__':
 
     avg_abs_diff2 = average(abs_diff2)
 
-    print('Mean squared error:', avg_abs_diff2)
-    print('Root mean squared error:', sqrt(avg_abs_diff2))
+    logging.info('Mean squared error:', avg_abs_diff2)
+    logging.info('Root mean squared error:', sqrt(avg_abs_diff2))

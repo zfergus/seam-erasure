@@ -36,7 +36,7 @@ mask should be True for every grid location we care about (want a solution to).
 skip should be True for every grid location we have a known good value for.
 """
 
-from __future__ import print_function, division
+from __future__ import division
 
 import collections
 
@@ -44,10 +44,10 @@ import numpy
 from numpy import *
 from scipy import sparse
 
-from .util import QuadEnergy, print_progress, rowcol_to_index
+from .util import QuadEnergy, rowcol_to_index
 
 
-def grad_and_mass(rows, cols, mask = None, skip = None):
+def grad_and_mass(rows, cols, mask=None, skip=None):
     """
     Returns a gradient operator matrix G for a grid of dimensions
         'rows' by 'cols',
@@ -69,16 +69,14 @@ def grad_and_mass(rows, cols, mask = None, skip = None):
     Matrices returned are scipy.sparse matrices.
     """
 
-    print_progress(0)
-
     assert rows > 0 and cols > 0
 
     if mask is not None:
-        mask = asarray(mask, dtype = bool)
+        mask = asarray(mask, dtype=bool)
         assert mask.shape == (rows, cols)
 
     if skip is not None:
-        skip = asarray(skip, dtype = bool)
+        skip = asarray(skip, dtype=bool)
         assert skip.shape == (rows, cols)
 
     # The number of derivatives in the +row direction is cols * (rows - 1),
@@ -133,7 +131,7 @@ def grad_and_mass(rows, cols, mask = None, skip = None):
 
     if(mask is not None):
         keep_rows = numpy.append(mask[:-1] & mask[1:],
-            mask[:, :-1] & mask[:, 1:])
+                                 mask[:, :-1] & mask[:, 1:])
         tiled_keep_rows = numpy.tile(keep_rows, 2)
         vals = vals[tiled_keep_rows]
         colJ = colJ[tiled_keep_rows]
@@ -144,8 +142,7 @@ def grad_and_mass(rows, cols, mask = None, skip = None):
     # rowI is dependent on the number of output rows.
     rowI = numpy.tile(numpy.arange(output_row), 2)
 
-    G = sparse.coo_matrix((vals, (rowI, colJ)),
-        shape=(output_row, rows * cols))
+    G = sparse.coo_matrix((vals, (rowI, colJ)), shape=(output_row, rows * cols))
     assert G.shape == (output_row, rows * cols)
 
     M = coo_diag(mass)
@@ -154,13 +151,10 @@ def grad_and_mass(rows, cols, mask = None, skip = None):
     S = coo_diag(S_diag)
     assert S.shape == (output_row, output_row)
 
-    print_progress(1.0)
-    print()
-
     return G, M, S
 
 
-def gen_symmetric_grid_laplacian(rows, cols, mask = None):
+def gen_symmetric_grid_laplacian(rows, cols, mask=None):
     """
     Returns a Laplacian operator matrix for a grid of dimensions 'rows' by
     'cols'. The matrix is symmetric and normalized such that the diagonal
@@ -175,7 +169,7 @@ def gen_symmetric_grid_laplacian(rows, cols, mask = None):
     return G.T * M * G
 
 
-def dirichlet_energy(rows, cols, y, mask = None, skip = None):
+def dirichlet_energy(rows, cols, y, mask=None, skip=None):
     """
     Builds the quadratic energy for the Dirichlet.
 
@@ -199,11 +193,11 @@ def dirichlet_energy(rows, cols, y, mask = None, skip = None):
     G, M, S = grad_and_mass(rows, cols, mask, skip)
     G, M, S = G.tocsc(), M.tocsc(), S.tocsc()
 
-    L  = (G.T.dot(M.dot(G)))
+    L = (G.T.dot(M.dot(G)))
     Lp = G.T.dot(S.dot(M.dot(G)))
 
-    return QuadEnergy(L, -sparse.csc_matrix(Lp.dot(y)),
-        sparse.csc_matrix(y.T.dot(Lp.dot(y))))
+    return QuadEnergy(
+        L, -sparse.csc_matrix(Lp.dot(y)), sparse.csc_matrix(y.T.dot(Lp.dot(y))))
 
 
 def coo_diag(vals):
@@ -215,14 +209,14 @@ def coo_diag(vals):
 
 
 def test_mask():
-    print('=== test_mask() ===')
+    logging.info('=== test_mask() ===')
 
     shape = (5, 5)
 
-    mask = ones(shape, dtype = bool)
+    mask = ones(shape, dtype=bool)
     mask[2, 2] = False
 
-    G, M, S = grad_and_mass(shape[0], shape[1], mask = mask)
+    G, M, S = grad_and_mass(shape[0], shape[1], mask=mask)
     L = G.T * M * G
 
     # set_printoptions(linewidth = 200)
@@ -230,13 +224,14 @@ def test_mask():
     # Print the weight of each grid vertex.
     # The weight should be the valence (number of neighbors)/4.
     # Multiply by 4 to get whole numbers
-    print(4 * L.diagonal().reshape(shape))
+    logging.info(4 * L.diagonal().reshape(shape))
+
 
 if __name__ == '__main__':
     # test_mask()
     sizes = [(4, 4, 1), (10, 10, 1), (100, 100, 1), (1000, 1000, 1)]
     for size in sizes:
-        print("Texture Size: %s" % (size,))
+        logging.info("Texture Size: %s" % (size,))
         width, height, depth = size
         N = width * height
 
