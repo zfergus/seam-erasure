@@ -14,7 +14,8 @@ from tqdm import tqdm
 
 from .accumulate_coo import AccumulateCOO
 from .seam_intervals import compute_edgePair_intervals
-from .util import *
+from .util import (lerp_UV, surrounding_pixels,
+                   globalEdge_to_local, pairwise, QuadEnergy)
 
 
 def A_Mat(uv0, uv1, p00, p10, p01, p11, nPixels):
@@ -109,8 +110,8 @@ def E_ab(a, b, edgePair, width, height):
     # E is Nx1 * 1xN = NxN
     def term(M, n):
         """
-            Compute the integral term with constant matrix (M) and
-            power n after integration.
+        Compute the integral term with constant matrix (M) and power n after
+        integration.
         """
         M *= (1. / n * (b**n - a**n))  # Prevent unnecessary copying
         return M
@@ -128,14 +129,14 @@ def E_ab(a, b, edgePair, width, height):
     AC = Adiff.T.dot(Cdiff)
     BC = Bdiff.T.dot(Cdiff)
 
-    values = (term(AA, 5.) + term(AB + AB.T, 4.) + term(AC + AC.T + BB, 3.)
-              + term(BC + BC.T, 2.) + term(CC, 1.))
+    values = (term(AA, 5.) + term(AB + AB.T, 4.) + term(AC + AC.T + BB, 3.) +
+              term(BC + BC.T, 2.) + term(CC, 1.))
 
     ijs = numpy.array(list(itertools.product(
         (p00, p10, p01, p11, p00p, p10p, p01p, p11p), repeat=2)))
 
-    E = scipy.sparse.coo_matrix(
-        (values.ravel(), ijs.reshape(-1, 2).T), shape=(nPixels, nPixels))
+    E = scipy.sparse.coo_matrix((values.ravel(), ijs.reshape(-1, 2).T),
+                                shape=(nPixels, nPixels))
 
     return E
 

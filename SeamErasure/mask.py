@@ -6,7 +6,6 @@ Written by Zachary Ferguson
 """
 
 import itertools
-from collections import deque
 import logging
 
 import numpy
@@ -16,12 +15,13 @@ from tqdm import tqdm
 
 from .seam_intervals import compute_edge_intervals
 from .points_in_triangle import points_in_triangle
-from .util import *
+from .util import UV_to_XY, pairwise, lerp_UV, surrounding_pixels
 
 
 def get_all_surrounding_pixels(edges, width, height):
     """
     Get a set of all pixels surrounding the given edges.
+
     Input:
         edges  - unsorted list of UV edges
         width  - width of the texture
@@ -32,10 +32,7 @@ def get_all_surrounding_pixels(edges, width, height):
     # TODO: This could be improved for better performance
     pixels = set()
     for edge in edges:
-        xy0 = UV_to_XY(edge[0], width, height)
-        xy1 = UV_to_XY(edge[1], width, height)
-        interval = sorted(list(compute_edge_intervals(
-            edge, width, height)))
+        interval = sorted(list(compute_edge_intervals(edge, width, height)))
 
         # Find all pixels along the seam
         for a, b in pairwise(interval):
@@ -100,8 +97,10 @@ def mask_inside_seam(mesh, seam_edges, width, height):
     seam_pixels = get_all_surrounding_pixels(seam_edges, width, height)
 
     # Create a list of the UV faces in Pixel space
-    faces = [numpy.array([UV_to_XY(mesh.vt[fv.vt], width, height)
-             for fv in face]) for face in mesh.f]
+    faces = [
+        numpy.array([UV_to_XY(mesh.vt[fv.vt], width, height) for fv in face])
+        for face in mesh.f
+    ]
 
     # This mask should be small enough for a dense matrix
     mask = numpy.zeros((height, width), dtype=bool)
@@ -167,10 +166,14 @@ def mask_inside_faces(mesh, width, height, init_mask=None):
         ll = numpy.array([face[:, 0].min(), face[:, 1].min()])
         ur = numpy.array([face[:, 0].max(), face[:, 1].max()])
         bbox = numpy.vstack([ll, ur])
-        xRange = range(max(0, int(bbox[0][0])),
-                       min(width, int(numpy.ceil(bbox[1][0])) + 1))
-        yRange = range(max(0, int(bbox[0][1])),
-                       min(height, int(numpy.ceil(bbox[1][1])) + 1))
+        xRange = range(
+            max(0, int(bbox[0][0])),
+            min(width,
+                int(numpy.ceil(bbox[1][0])) + 1))
+        yRange = range(
+            max(0, int(bbox[0][1])),
+            min(height,
+                int(numpy.ceil(bbox[1][1])) + 1))
         inbox = numpy.array(list(itertools.product(xRange, yRange)))
 
         # Test inside face for all pixels in the bounding box
@@ -183,14 +186,13 @@ if __name__ == "__main__":
     import obj_reader
     import texture
     from find_seam import find_seam, seam_to_UV
-    from util import *
 
-    mesh = obj_reader.quads_to_triangles(obj_reader.load_obj(
-        '../models/cow.obj'))
-    texture = numpy.array(texture.load_texture(
-        "../textures/cow/Cow_Monster_N.png"))
+    mesh = obj_reader.quads_to_triangles(
+        obj_reader.load_obj('../models/cow.obj'))
+    texture = numpy.array(
+        texture.load_texture("../textures/cow/Cow_Monster_N.png"))
 
-    height, width, depth = (texture.shape + (1,))[:3]
+    height, width, depth = (texture.shape + (1, ))[:3]
     N = width * height
     textureVec = texture.reshape(N, -1)
 
@@ -205,8 +207,8 @@ if __name__ == "__main__":
     logging.info("Number of foldover edges: %d\n" % len(foldovers))
 
     # Find all of the seam loops
-    bag_of_edges = ([edge for edgepair in uv_seam for edge in edgepair]
-                    + uv_boundary + uv_foldovers)
+    bag_of_edges = ([edge for edgepair in uv_seam
+                     for edge in edgepair] + uv_boundary + uv_foldovers)
 
     # Constrain the values
     logging.info("Mask Inside Seam")

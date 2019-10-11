@@ -13,14 +13,15 @@ from tqdm import tqdm
 
 from .accumulate_coo import AccumulateCOO
 from .seam_intervals import compute_edgePair_intervals
-from .util import *
+from .util import (is_counterclockwise, lerp_UV, surrounding_pixels,
+                   globalEdge_to_local, pairwise, QuadEnergy)
 
 import warnings
 warnings.simplefilter('ignore', scipy.sparse.SparseEfficiencyWarning)
 
 
 def A_Mat(st_edge, gamma_perp, p00, p10, p01, p11, nPixels):
-    """ Create a cooefficent matrix A for the equation ApT + Bp. """
+    """Create a cooefficent matrix A for the equation ApT + Bp."""
     c = gamma_perp[1] * (st_edge[1][0] - st_edge[0][0]) + \
         gamma_perp[0] * (st_edge[1][1] - st_edge[0][1])
     coeffs = numpy.zeros((1, nPixels))
@@ -32,7 +33,7 @@ def A_Mat(st_edge, gamma_perp, p00, p10, p01, p11, nPixels):
 
 
 def B_Mat(st_edge, gamma_perp, p00, p10, p01, p11, nPixels):
-    """ Create a cooefficent matrix B for the equation ApT + Bp. """
+    """Create a cooefficent matrix B for the equation ApT + Bp."""
     c1 = gamma_perp[1] * st_edge[0][0] + gamma_perp[0] * st_edge[0][1]
     c2 = gamma_perp[0]
     c3 = gamma_perp[1]
@@ -84,7 +85,7 @@ def E_ab(a, b, mesh, edgePair, width, height):
     mid_uv_p = lerp_UV((a + b) / 2., uv0p, uv1p)
 
     # Determine surrounding pixel indices
-    (p00,  p10,  p01,  p11) = surrounding_pixels(
+    (p00, p10, p01, p11) = surrounding_pixels(
         mid_uv, width, height, as_index=True)
     (p00p, p10p, p01p, p11p) = surrounding_pixels(
         mid_uv_p, width, height, as_index=True)
@@ -106,8 +107,8 @@ def E_ab(a, b, mesh, edgePair, width, height):
     # E is Nx1 * 1xN = NxN
     def term(M, n):
         """
-        Compute the integral term with constant matrix (M) and
-        power n after integration.
+        Compute the integral term with constant matrix (M) and power n after
+        integration.
         """
         M *= (1. / n * (b**n - a**n))  # Prevent unnecessary copying
         return M
@@ -137,11 +138,13 @@ def E_ab(a, b, mesh, edgePair, width, height):
 def E_edgePair(mesh, edgePair, width, height, edge_len):
     """
     Compute the energy coefficient matrix over a single edge pair.
+
     Inputs:
         mesh - the model in OBJ format
         edgePair - the edgePair of the model in (fi, (fv0, fv1)) format
         width, height - texture's dimensions
         edge_len - the length of the edge in 3D space
+
     Output:
         Returns the energy coefficient matrix over a single edge pair.
     """
@@ -175,11 +178,13 @@ def E_edgePair(mesh, edgePair, width, height, edge_len):
 def E_total(mesh, seam, width, height, depth, edge_lens):
     """
     Calculate the energy coeff matrix for a width x height texture.
+
     Inputs:
         mesh - the model in OBJ format
         seam - the seam of the model in (fi, (fv0, fv1)) format
         width, height - texture's dimensions
         edge_lens - a list containing the lengths of each edge in 3D space.
+
     Output:
         Returns the quadtratic term matrix for the seam gradient.
     """

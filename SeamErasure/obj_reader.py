@@ -20,7 +20,7 @@ FaceVertex = recordclass('FaceVertex', ['v', 'vt', 'vn'])
 
 
 def parse_obj(obj_file, filename=None):
-    """ Parses the file object as a OBJ model. """
+    """Parses the file object as a OBJ model."""
     if not filename:
         filename = obj_file.name
 
@@ -33,14 +33,14 @@ def parse_obj(obj_file, filename=None):
     extra_lines = []
 
     for line in obj_file:
-        if(type(line) is bytes):
+        if type(line) is bytes:
             line = line.decode()
         sline = line.strip().split()
         if len(sline) == 0:
             continue
         if sline[0] == 'v':
             v.append(XYZ(*list(map(float, sline[1:4]))))
-            if(len(sline) > 4):
+            if (len(sline) > 4):
                 vc.append(list(map(float, sline[4:])))
         elif sline[0] == 'vt':
             # Could also use UVW coordinates
@@ -51,23 +51,23 @@ def parse_obj(obj_file, filename=None):
             # Pad bundle with two extra '//' and then take the first three
             # values in between. This ensures that we always get enough
             # data for a FaceVertex.
-            face = tuple(
-                [FaceVertex(
+            face = tuple([
+                FaceVertex(
                     *[(int(val) - 1 if len(val) > 0 else None)
-                        for val in (bundle + '//').split('/')[:3]]
-                ) for bundle in sline[1:]]
-            )
+                      for val in (bundle + '//').split('/')[:3]])
+                for bundle in sline[1:]
+            ])
             f.append(face)
         else:
             extra_lines.append(line[:-1])
 
-    result = OBJ(v = v, vt = vt, vn = vn, vc = vc, f = f,
-        extra = extra_lines, filename = filename)
+    result = OBJ(
+        v=v, vt=vt, vn=vn, vc=vc, f=f, extra=extra_lines, filename=filename)
     return result
 
 
 def load_obj(filename):
-    """ Load a Wavefront OBJ file with the given filename.  """
+    """Load a Wavefront OBJ file with the given filename."""
 
     logging.info("Loading OBJ: %s" % os.path.abspath(filename))
 
@@ -77,7 +77,8 @@ def load_obj(filename):
 
 def quads_to_triangles(mesh):
     """
-    Convert Quad faces to Triangular ones.
+    Convert Quadrilateral faces to Triangular ones.
+
     Inputs:
         mesh - an OBJ object loaded from load_obj()
     Outputs:
@@ -85,7 +86,7 @@ def quads_to_triangles(mesh):
     """
     newFaces = []
     for i, face in enumerate(mesh.f):
-        if(len(face) != 3):
+        if (len(face) != 3):
             assert len(face) == 4
             newFaces.append((face[0], face[1], face[2]))
             newFaces.append((face[2], face[3], face[0]))
@@ -98,7 +99,7 @@ def quads_to_triangles(mesh):
 def convert_to_counterclockwise_UVs(mesh):
     """
     Converts any clockwise UV triangles to counter-clockwise order.
-    !!! WARNING: This may break find_seam_fast.find_seam() !!!
+    !!! WARNING: This may break find_seam.find_seam() !!!
     Inputs:
         mesh - an OBJ object loaded from load_obj(); must be all
             triangles (use quads_to_triangles())
@@ -110,6 +111,6 @@ def convert_to_counterclockwise_UVs(mesh):
         uvs = [mesh.vt[fv.vt] for fv in face]
         # Create matrix as specified (http://goo.gl/BDPYIT)
         mat = numpy.array([[1, uv.u, uv.v] for uv in uvs])
-        if(numpy.linalg.det(mat) < 0): # If order is clockwise
-            mesh.f[i] = (face[1], face[0], face[2]) # Swap order
+        if numpy.linalg.det(mat) < 0:  # If order is clockwise
+            mesh.f[i] = (face[1], face[0], face[2])  # Swap order
     return mesh

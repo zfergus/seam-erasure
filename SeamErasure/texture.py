@@ -4,7 +4,6 @@ Written by Zachary Ferguson
 """
 
 import os
-import sys
 import logging
 
 import math
@@ -27,7 +26,7 @@ def save_texture(data, fname):
 
 def save_texture_channels(data, base_fname):
     """ Save a N depth image as N images of depth 1. """
-    data.reshape((data.shape + (1,))[:3])
+    data.reshape((data.shape + (1, ))[:3])
     depth = data.shape[2]
     base, ext = os.path.splitext(base_fname)
     fstr = "%%s-%%0%dd%%s" % int(math.log10(data.shape[2]) + 1)
@@ -38,7 +37,7 @@ def save_texture_channels(data, base_fname):
 
 def save_float_mat_as_boolean(M, fname, tolerance=1e-8):
     """ Save a floating point matrix as a binary image for > tolerance. """
-    assert(len(M.shape) == 2)  # Needs to be a 2-dimensional matrix
+    assert len(M.shape) == 2  # Needs to be a 2-dimensional matrix
     tmp = 255 * (abs(M.A) > tolerance).astype("uint8")
     tmp = tmp.reshape(tmp.shape[0], tmp.shape[1], 1).repeat(3, axis=2)
     # TODO: Use optional mode parameter to set to L of 1
@@ -46,7 +45,7 @@ def save_float_mat_as_boolean(M, fname, tolerance=1e-8):
 
 
 # Quick test of save all depths.
-if(__name__ == "__main__"):
+if __name__ == "__main__":
     import numpy
     img = numpy.array(load_texture("../img/rgb.png"))
     img = img / 255.0
