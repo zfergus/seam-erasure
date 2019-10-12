@@ -1,3 +1,5 @@
+"""Web UI for Seam Erasure."""
+
 from __future__ import print_function
 
 import os
@@ -8,13 +10,12 @@ import time
 import numpy
 from PIL import Image
 
-from flask import (
-    Flask, request, render_template, url_for, flash, redirect, send_file)
+from flask import Flask, request, render_template, send_file
 
-from SeamErasure import seam_erasure, obj_reader, util
-from SeamErasure import weight_data
+from seam_erasure import seam_erasure, obj_reader, util
+from seam_erasure import weight_data
 
-app = Flask(__name__)
+app = Flask("Seam Erasure")
 
 
 def allowed_file(filename):
@@ -137,5 +138,9 @@ def erase():
     return render_template('min-form.html')
 
 
+def main():
+    app.run(debug=False)
+
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    main()

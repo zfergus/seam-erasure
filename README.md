@@ -61,7 +61,7 @@ energy? (default: `none`)
 
 ## Files
 
-* `SeamErasure/`: Python package for Seam-Erasure
+* `seam_erasure/`: Python package for Seam-Erasure
 * `main.py`: Command-line interface for seam erasure.
 * `server.py`: Flask based Python code for handling web inputs.
 * `examples/`: examples 3D model and texture files for testing
