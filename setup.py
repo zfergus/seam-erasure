@@ -9,6 +9,11 @@ here = os.path.abspath(os.path.dirname(__file__))
 # Get the long description from the README file
 with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
+long_description = long_description.replace(
+    "static/img/",
+    "https://raw.githubusercontent.com/zfergus/seam-erasure/master/static/img/")
+
+print(long_description)
 
 setup(
     name=seam_erasure.__name__,
@@ -21,10 +26,6 @@ setup(
     author=seam_erasure.__author__,
     author_email=seam_erasure.__email__,
     url="https://github.com/zfergus/seam-erasure",
-    download_url=(
-        "https://github.com/zfergus/seam-erasure/archive/v{}.tar.gz".format(
-            seam_erasure.__version__)),
-    # Keywords that define your package best
     keywords=["3D Modeling", "Textures", "Computer Graphics"],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
@@ -32,7 +33,6 @@ setup(
         "Intended Audience :: Science/Research",
         "Topic :: Multimedia :: Graphics :: 3D Modeling",
         "License :: OSI Approved :: MIT License",
-        # Specify which pyhton versions that you want to support
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
@@ -54,13 +54,13 @@ setup(
         "cholmod": ["cvxopt"],
         "web-ui": ["flask"],
     },
-    entry_points={  # Optional
+    entry_points={
         "console_scripts": [
             "seam-erasure=seam_erasure.cli:main",
             # "seam-erasure-webui=server:main",
         ],
     },
-    project_urls={  # Optional
+    project_urls={
         "Bug Reports": "https://github.com/zfergus/seam-erasure/issues",
         "Research Project Page": "https://cragl.cs.gmu.edu/seamless/",
         "Paper": "https://goo.gl/1LwB3Z",
