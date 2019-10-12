@@ -1,11 +1,12 @@
+"""Compare the value of two images."""
+
 import sys
 
 import numpy
-from PIL import Image
 
-import context
+import context  # noqa
 
-from SeamErasure.texture import load_texture
+from seam_erasure.texture import load_texture
 
 assert(len(sys.argv) == 3)
 

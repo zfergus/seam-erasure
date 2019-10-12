@@ -14,4 +14,4 @@ install:
 script:
   - python main.py examples/cube/cube.obj examples/cube/texture-bad-background.png --output examples/cube/travis-results.png
   - python tests/compare_images.py examples/cube/texture-bad-background-erased.png examples/cube/travis-results.png
-  - python SeamErasure/weight_data.py ./examples/weight-data/hercules.data ./examples/weight-data/hercules-copy.data
+  - python seam_erasure/weight_data.py ./examples/weight-data/hercules.data ./examples/weight-data/hercules-copy.data

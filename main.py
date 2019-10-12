@@ -1,34 +1,32 @@
-#!/usr/bin/env python -u
+#!/usr/bin/env python
 """
 CMD-line tool for running seam erasure.
+
 Written by Zachary Ferguson
 """
 from __future__ import print_function, division
 
 import os
-import sys
 import argparse
 import time
 import logging
 
 from recordclass import recordclass
 
-import pdb
-
 import numpy
 
-from SeamErasure import obj_reader
-from SeamErasure import texture
-from SeamErasure import seam_erasure
-from SeamErasure.util import to_uint8
-from SeamErasure import weight_data
+from seam_erasure import obj_reader
+from seam_erasure import texture
+from seam_erasure import seam_erasure
+from seam_erasure.util import to_uint8
+from seam_erasure import weight_data
 
 InputTextureFile = recordclass(
     "InputTextureFile", ["name", "depth", "isFloat", "isDataFile"])
 
 
 def create_parser():
-    """ Creates an ArgumentParser for this command line tool. """
+    """Create an ArgumentParser for this command line tool."""
     parser = argparse.ArgumentParser(
         description=("Erase texture seams to prevent visible seams or tearing "
                      "in various texture maps (color, normal, displacement, "
@@ -63,7 +61,8 @@ def create_parser():
 
 def parse_args(parser=None):
     """
-    Uses ArgumentParser to parse the command line arguments.
+    Use ArgumentParser to parse the command line arguments.
+
     Input:
         parser - a precreated parser (If parser is None, creates a new parser)
     Outputs:
@@ -118,7 +117,8 @@ def parse_args(parser=None):
 
 def loadTextures(in_path, loadFromDirectory, loadFromData):
     """
-    Loads all textures into a single height x width x depth(s) array.
+    Load all textures into a single height x width x depth(s) array.
+
     Inputs:
         in_path - path to texture(s)
         loadFromDirectory - is the path a directory?
@@ -160,6 +160,7 @@ def loadTextures(in_path, loadFromDirectory, loadFromData):
 def saveTextures(outData, textures, out_path, loadFromDirectory):
     """
     Save the textures to the specified path.
+
     Inputs:
         outData - height x width x depth array for the output texture(s)
         textures - list of InputTextureFile objects
@@ -217,15 +218,6 @@ def main():
         loadTextures(in_texture, loadFromDirectory, loadFromData))
 
     height, width = textureData.shape[:2]
-
-    # TODO: Remove this comment for bounds.
-    # isUnbounded = any([tex.isFloat for tex in textures])
-    # bounds = None if isUnbounded else (0, 1)
-    # root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    # energy_fname = ("%s-%s-%senergies.csv" % (
-    #     os.path.splitext(os.path.basename(in_mesh))[0],
-    #     os.path.splitext(os.path.basename(in_texture))[0],
-    #     "global-" if do_global else ""))
 
     logging.info("Model: %s\nTexture: %s\n" % (os.path.basename(in_mesh),
                                                os.path.basename(in_texture)))
