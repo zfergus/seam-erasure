@@ -1,46 +1,65 @@
 # Seam Erasure
 
-[![Build Status](https://travis-ci.com/zfergus/seam-erasure.svg?branch=master)](https://travis-ci.com/zfergus/seam-erasure)
-
 <p align="center">
-<img src = "static/img/teaser.png" width="80%"><br>
-<b>Seamlessly erase seams from your favorite 3D models.</b>
+    <img src = "static/img/teaser.png" width="80%">
 </p>
 
-* [Project Page](https://cragl.cs.gmu.edu/seamless/)
-* [Paper](https://goo.gl/1LwB3Z)
-* [Video](https://youtu.be/kCryf9n82Y8)
-* [Seam Aware Decimation Code](https://github.com/songrun/SeamAwareDecimater)
+<p align="center">
+    <a href="https://pypi.org/project/seam-erasure/"><img src="https://img.shields.io/pypi/v/seam-erasure.svg?color=brightgreen&logo=python&logoColor=white"></img></a>
+    <a href="https://travis-ci.com/zfergus/seam-erasure"><img src="https://travis-ci.com/zfergus/seam-erasure.svg?branch=master" title="Build Status" alt="Build Status"></img></a>
+    <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/github/license/ljvmiranda921/seagull.svg?color=blue"></img></a>
+</p>
 
-Erases texture seams to prevent visible seams or tearing in various texture
-maps (color, normal, displacement, ambient occlusion, etc.).
-
-## Overview
+<p align="center">
+    <b>Seamlessly erase seams from your favorite 3D models.</b>
+</p>
 
 Textures seams often produce errors when bi-linearly interpolated. This
 results in a visible seam line or other undesired artifacts. The goal of this
 project is to devise a numerical solution to this problem by minimizing the
-energy/error between interpolated values of edge pairs.
+difference between interpolated values of edge pairs. Works for various texture
+maps regardless of useage (e.g. color maps, normal maps, displacement maps, 
+ambient occlusion, geometry images, and skinning weight textures).
 
-## Dependencies
+#### Read more:
+* [Research Project Page](https://cragl.cs.gmu.edu/seamless/)
+* [Paper](https://goo.gl/1LwB3Z)
+* [Video](https://youtu.be/kCryf9n82Y8)
+* [Seam Aware Decimation Code](https://github.com/songrun/SeamAwareDecimater)
 
-Install all required dependencies using: `pip install -r requirements.txt`
+## Installation
+
+To install Seam Erasure use the following command in your terminal:
+
+```
+pip install seam-erasure
+```
+
+This is the preferred method to install Seam Erasure. 
+
+If you perfer to use Seam Erasure without installing it, you can clone the repo:
+
+```
+git clone https://github.com/zfergus/seagull.git
+```
+
+### Dependencies
+
+If you install Seam Erasure using `pip` all dependencies will be installed. If you choose to use Seam Erasure without installing, you can install all required dependencies using `pip install -r requirements.txt`.
 
 Dependencies include:
 * `numpy`: linear algebra
 * `scipy`: sparse matrix operations
-* `recordclass`: simple data objects
 * `pillow`: saving/loading texture image files
+* `recordclass`: simple data objects
+* `tqdm`: fancy progressbars
 
 ## Usage
 
-### Command-Line
-
-To use the seam eraser tool, first install the required packages, then
-enter the following into a command-line:
+If you install using `pip` a `seam-erasure` tool will be installed. You can use Seam Erase from the command line using the following command:
 
 ```bash
-python main.py path/to/input_model path/to/input_texture [-h] [-o path/to/output_texture] [-g] [--sv {none,texture,lerp}] [-d]
+seam-erasure path/to/input_model path/to/input_texture [-h] [-o path/to/output_texture] [-g] [--sv {none,texture,lerp}] [-d]
 ```
 
 Positional arguments:
@@ -58,6 +77,8 @@ energy? (default: `none`)
     * `lerp`: use linearly interpolated values along the edge
         * Values are provided at the vertices in the `.obj` as additional entries after the xyz triplet (e.g. `v <x> <y> <z> [<r>] [<g>] [<b>] [<a>] ...` where the additional channels are optional and must match the number of channels in the texture image).
 * `-d`, `--data`: Should the input texture(s) be loaded as a `.data` files? (default: False)
+
+**Note:** if you did not install the code replace `seam-erasure` in the above command with `python main.py`.
 
 ## Files
 
@@ -81,7 +102,7 @@ python server.py
 This will start a server on the localhost. Navigate to the outputted address
 in your choice of web browser to view the interface.
 
-## Results
+## Examples
 
 ### Diffuse Textures
 
