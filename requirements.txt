@@ -2,5 +2,5 @@ numpy
 scipy
 recordclass
 pillow
-pathlib; python_version < '3.4'
 tqdm
+pathlib; python_version < '3.4'

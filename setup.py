@@ -1,8 +1,14 @@
 """Install seam_erasure."""
 
-from distutils.core import setup
+from setuptools import setup
+import os
 
 import seam_erasure
+
+here = os.path.abspath(os.path.dirname(__file__))
+# Get the long description from the README file
+with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
 
 setup(
     name=seam_erasure.__name__,
@@ -10,13 +16,14 @@ setup(
     version=seam_erasure.__version__,
     license=seam_erasure.__license__,
     description="Seamlessly erase seams from your favorite 3D models.",
-    long_description=(
-        "Erases texture seams to prevent visible seams or tearing in various "
-        "texture maps (color, normal, displacement, ambient occlusion, etc)."),
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     author=seam_erasure.__author__,
     author_email=seam_erasure.__email__,
     url="https://github.com/zfergus/seam-erasure",
-    download_url="https://github.com/zfergus/seam-erasure/archive/v0.1.tar.gz",
+    download_url=(
+        "https://github.com/zfergus/seam-erasure/archive/v{}.tar.gz".format(
+            seam_erasure.__version__)),
     # Keywords that define your package best
     keywords=["3D Modeling", "Textures", "Computer Graphics"],
     classifiers=[
@@ -49,8 +56,8 @@ setup(
     },
     entry_points={  # Optional
         "console_scripts": [
-            "seam-erasure=main:main",
-            "seam-erasure-webui=server:main",
+            "seam-erasure=seam_erasure.cli:main",
+            # "seam-erasure-webui=server:main",
         ],
     },
     project_urls={  # Optional
