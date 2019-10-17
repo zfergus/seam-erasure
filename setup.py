@@ -11,9 +11,8 @@ with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 long_description = long_description.replace(
     "static/img/",
-    "https://raw.githubusercontent.com/zfergus/seam-erasure/master/static/img/")
-
-print(long_description)
+    "https://raw.githubusercontent.com/zfergus/seam-erasure/master/static/img/"
+)
 
 setup(
     name=seam_erasure.__name__,
