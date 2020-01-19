@@ -40,7 +40,7 @@ This is the preferred method to install Seam Erasure.
 If you perfer to use Seam Erasure without installing it, you can clone the repo:
 
 ```
-git clone https://github.com/zfergus/seagull.git
+git clone https://github.com/zfergus/seam-erasure.git
 ```
 
 ### Dependencies
