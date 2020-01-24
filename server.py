@@ -93,8 +93,7 @@ def erase():
             do_global = "global" in request.form
 
             out = seam_erasure.erase_seam(
-                mesh, textureData, do_global=do_global, sv_method=sv_method,
-                display_energy_file=None)
+                mesh, textureData, do_global=do_global, sv_method=sv_method)
 
             out = out.reshape((height, width, -1))
             if(out.shape[2] < 2):
