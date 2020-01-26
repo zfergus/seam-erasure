@@ -61,7 +61,7 @@ class SeamValueMethod:
 
 def display_quadratic_energy(coeffs, x0, x, name):
     """Compute the energy of a solution given the coefficents."""
-    logging.info("%s Before After" % name)
+    logging.debug("{} Before After".format(name))
     E0 = x0.T.dot(coeffs.Q.dot(x0)) + 2.0 * x0.T.dot(coeffs.L.A) + coeffs.C.A
     E = x.T.dot(coeffs.Q.dot(x)) + 2.0 * x.T.dot(coeffs.L.A) + coeffs.C.A
     depth = (x.shape + (1,))[1]
@@ -90,7 +90,7 @@ def display_energies(energies, x0, x):
         if (energy):
             display_quadratic_energy(energy, x0, x, name)
         else:
-            logging.info("%s\nN/a" % name)
+            logging.debug("%s\nN/a" % name)
 
 
 def compute_seam_lengths(mesh, seam):
@@ -198,22 +198,33 @@ def erase_seam(mesh, texture, sv_method=SeamValueMethod.NONE, do_global=False):
     dot_process = Process(target=print_dots)
     dot_process.start()
 
-    try:
-        # CVXOPT cholmod linsolve should be less memory intensive.
-        import cvxopt
-        import cvxopt.cholmod
-        quad = quad.tocoo()
-        system = cvxopt.spmatrix(quad.data, numpy.array(quad.row, dtype=int),
-                                 numpy.array(quad.col, dtype=int))
-        rhs = cvxopt.matrix(-lin.A)
-        cvxopt.cholmod.linsolve(system, rhs)
-        solution = numpy.array(rhs)
-    except Exception as e:
-        logging.warning("cvxopt.cholmod failed, "
-                        + "using scipy.sparse.linalg.spsolve(): %s" % e)
-        solution = scipy.sparse.linalg.spsolve(quad, -lin)
-    finally:
-        dot_process.terminate()
+    # Use iterative solver for large textures
+    if(N >= 2048**2):
+        textureVec = texture.reshape(N, -1)
+        solution = numpy.empty(textureVec.shape)
+        M = scipy.sparse.identity(quad.shape[0]) / weights[4]
+        for j in range(textureVec.shape[1]):
+            logging.info("Solving channel {}".format(j))
+            solution[:, j], _ = scipy.sparse.linalg.bicgstab(
+                quad, (-lin[:, j]).A.flatten(), x0=textureVec[:, j], M=M,
+                maxiter=1000)
+    # Use direct solver for smaller textures
+    else:
+        try:
+            # CVXOPT cholmod linsolve should be less memory intensive.
+            import cvxopt
+            import cvxopt.cholmod
+            quad = quad.tocoo()
+            system = cvxopt.spmatrix(quad.data, numpy.array(quad.row, dtype=int),
+                                     numpy.array(quad.col, dtype=int))
+            rhs = cvxopt.matrix(-lin.A)
+            cvxopt.cholmod.linsolve(system, rhs)
+            solution = numpy.array(rhs)
+        except Exception as e:
+            logging.warning("cvxopt.cholmod failed, "
+                            + "using scipy.sparse.linalg.spsolve(): %s" % e)
+            solution = scipy.sparse.linalg.spsolve(quad, -lin)
+    dot_process.terminate()
 
     logging.info("Done\n")
 
