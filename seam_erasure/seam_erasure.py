@@ -183,9 +183,9 @@ def erase_seam(mesh, texture, sv_method=SeamValueMethod.NONE, do_global=False):
     # Minimize quadtratic energy (Quad * x = lin)
     # Weights in the order [bleW, svW, sgW, lsqW, diriW]
     if do_global:
-        weights = 1e10, 1e2, 1e2, 1e2, 1e0
+        weights = numpy.array([1e10, 1e2, 1e2, 1e2, 1e0])
     else:
-        weights = 1e10, 1e2, 1e2, 1e4, 1e0
+        weights = numpy.array([1e10, 1e2, 1e2, 1e4, 1e0])
 
     quad = scipy.sparse.csc_matrix((N, N))  # Quadratic term
     lin = scipy.sparse.csc_matrix((N, depth))  # Linear term
@@ -193,21 +193,23 @@ def erase_seam(mesh, texture, sv_method=SeamValueMethod.NONE, do_global=False):
         if E is not None:
             quad += weight * E.Q
             lin += weight * E.L
-
     # Print progress dots.
     dot_process = Process(target=print_dots)
     dot_process.start()
 
     # Use iterative solver for large textures
-    if(N >= 2048**2):
+    if(quad.nnz >= 2e6):
+        logging.info(
+            "Using iterative solver for large system (nnz={})".format(quad.nnz))
         textureVec = texture.reshape(N, -1)
         solution = numpy.empty(textureVec.shape)
-        M = scipy.sparse.identity(quad.shape[0]) / weights[4]
         for j in range(textureVec.shape[1]):
             logging.info("Solving channel {}".format(j))
-            solution[:, j], _ = scipy.sparse.linalg.bicgstab(
-                quad, (-lin[:, j]).A.flatten(), x0=textureVec[:, j], M=M,
-                maxiter=1000)
+            def callback(xk): return logging.debug("||Qx - l||={:.3e}".format(
+                numpy.linalg.norm(quad.dot(xk) + lin[:, j].A.flatten())))
+            solution[:, j], _ = scipy.sparse.linalg.cg(
+                quad, (-lin[:, j]).A, x0=textureVec[:, j],
+                tol=1 / 255., atol=1 / 255., callback=callback)
     # Use direct solver for smaller textures
     else:
         try:
