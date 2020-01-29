@@ -58,19 +58,12 @@ def C_Mat(uv0, uv1, p00, p10, p01, p11, nPixels):
 
 def bilerp_coeffMats(uv0, uv1, p00, p10, p01, p11, nPixels):
     """ Compute the matrix coefficients for a bilinear interpolation. """
-
     # Compute A, AP
     A = A_Mat(uv0, uv1, p00, p10, p01, p11, nPixels)
-    logging.debug("A=%s" % A)
-
     # Compute B, Bp
     B = B_Mat(uv0, uv1, p00, p10, p01, p11, nPixels)
-    logging.debug("B=%s" % B)
-
     # Compute C, Cp
     C = C_Mat(uv0, uv1, p00, p10, p01, p11, nPixels)
-    logging.debug("C=%s" % C)
-
     return (A, B, C)
 
 
