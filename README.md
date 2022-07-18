@@ -5,9 +5,9 @@
 </p>
 
 <p align="center">
-    <a href="https://pypi.org/project/seam-erasure/"><img src="https://img.shields.io/pypi/v/seam-erasure.svg?color=brightgreen&logo=python&logoColor=white"></img></a>
-    <a href="https://travis-ci.com/zfergus/seam-erasure"><img src="https://travis-ci.com/zfergus/seam-erasure.svg?branch=master" title="Build Status" alt="Build Status"></img></a>
-    <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/github/license/ljvmiranda921/seagull.svg?color=blue"></img></a>
+    <a href="https://pypi.org/project/seam-erasure/"><img src="https://img.shields.io/pypi/v/seam-erasure.svg?color=brightgreen&logo=python&logoColor=white"></a>
+    <a href="https://github.com/zfergus/seam-erasure/actions/workflows/continuous.yml"><img src="https://github.com/zfergus/seam-erasure/actions/workflows/continuous.yml/badge.svg"></a>
+    <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/github/license/ljvmiranda921/seagull.svg?color=blue"></a>
 </p>
 
 <p align="center">
