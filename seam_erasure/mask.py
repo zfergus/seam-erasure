@@ -67,7 +67,7 @@ def mask_seam(mesh, seam_edges, width, height, seam_pixels=None):
     vals = numpy.full(len(seam_pixels), True, dtype=bool)
     coords = numpy.array(list(seam_pixels))
     mask = scipy.sparse.coo_matrix((vals, (coords[:, 1], coords[:, 0])),
-                                   shape=(height, width)).A.astype(bool)
+                                   shape=(height, width)).toarray().astype(bool)
 
     return ~mask
 
@@ -119,14 +119,14 @@ def mask_inside_seam(mesh, seam_edges, width, height):
         inbox = pts[inidx]
 
         # Only test seam pixels inside the bounding_box
-        if(inbox.shape[0] > 0):
+        if (inbox.shape[0] > 0):
             mask[inbox[:, 1], inbox[:, 0]] |= points_in_triangle(face, inbox)
 
     # Mask is False if pixels inside (this needs to be inverted).
     vals = numpy.full(len(seam_pixels), True, dtype=bool)
     coords = numpy.array(list(seam_pixels))
     full = scipy.sparse.coo_matrix((vals, (coords[:, 1], coords[:, 0])),
-                                   shape=mask.shape).A
+                                   shape=mask.shape).toarray()
     mask = full ^ mask
     return ~mask
 
@@ -156,7 +156,7 @@ def mask_inside_faces(mesh, width, height, init_mask=None):
 
     # This mask should be small enough for a dense matrix
     mask = init_mask
-    if(mask is None):
+    if (mask is None):
         mask = numpy.zeros((height, width), dtype=bool)
 
     disable_pbar = logging.getLogger().getEffectiveLevel() > logging.INFO

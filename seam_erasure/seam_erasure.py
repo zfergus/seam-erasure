@@ -62,8 +62,10 @@ class SeamValueMethod:
 def display_quadratic_energy(coeffs, x0, x, name):
     """Compute the energy of a solution given the coefficents."""
     logging.debug("{} Before After".format(name))
-    E0 = x0.T.dot(coeffs.Q.dot(x0)) + 2.0 * x0.T.dot(coeffs.L.A) + coeffs.C.A
-    E = x.T.dot(coeffs.Q.dot(x)) + 2.0 * x.T.dot(coeffs.L.A) + coeffs.C.A
+    E0 = x0.T.dot(coeffs.Q.dot(x0)) + 2.0 * \
+        x0.T.dot(coeffs.L.toarray()) + coeffs.C.toarray()
+    E = x.T.dot(coeffs.Q.dot(x)) + 2.0 * \
+        x.T.dot(coeffs.L.toarray()) + coeffs.C.toarray()
     depth = (x.shape + (1,))[1]
     for i in range(depth):
         logging.debug("%d %g %g" % (i, E0[i] if depth < 2 else E0[i, i],
@@ -198,17 +200,18 @@ def erase_seam(mesh, texture, sv_method=SeamValueMethod.NONE, do_global=False):
     dot_process.start()
 
     # Use iterative solver for large textures
-    if(quad.nnz >= 2e6):
+    if (quad.nnz >= 2e6):
         logging.info(
             "Using iterative solver for large system (nnz={})".format(quad.nnz))
         textureVec = texture.reshape(N, -1)
         solution = numpy.empty(textureVec.shape)
         for j in range(textureVec.shape[1]):
             logging.info("Solving channel {}".format(j))
+
             def callback(xk): return logging.debug("||Qx - l||={:.3e}".format(
-                numpy.linalg.norm(quad.dot(xk) + lin[:, j].A.flatten())))
+                numpy.linalg.norm(quad.dot(xk) + lin[:, j].toarray().flatten())))
             solution[:, j], _ = scipy.sparse.linalg.cg(
-                quad, (-lin[:, j]).A, x0=textureVec[:, j],
+                quad, (-lin[:, j]).toarray(), x0=textureVec[:, j],
                 tol=1 / 255., atol=1 / 255., callback=callback)
     # Use direct solver for smaller textures
     else:
@@ -219,7 +222,7 @@ def erase_seam(mesh, texture, sv_method=SeamValueMethod.NONE, do_global=False):
             quad = quad.tocoo()
             system = cvxopt.spmatrix(quad.data, numpy.array(quad.row, dtype=int),
                                      numpy.array(quad.col, dtype=int))
-            rhs = cvxopt.matrix(-lin.A)
+            rhs = cvxopt.matrix(-lin.toarray())
             cvxopt.cholmod.linsolve(system, rhs)
             solution = numpy.array(rhs)
         except Exception as e:
@@ -233,5 +236,5 @@ def erase_seam(mesh, texture, sv_method=SeamValueMethod.NONE, do_global=False):
     display_energies(energies, texture.reshape(N, -1), solution)
 
     if scipy.sparse.issparse(solution):
-        return solution.A
+        return solution.toarray()
     return solution
