@@ -211,12 +211,12 @@ def erase_seam(mesh, texture, sv_method=SeamValueMethod.NONE, do_global=False):
         solution = numpy.array(rhs)
     except Exception as e:
         logging.warning(
-            f"cvxopt.cholmod failed, using scipy.sparse.linalg.spsolve(): {e:s}")
+            f"cvxopt.cholmod failed, using scipy.sparse.linalg.spsolve(): {e}")
         try:
             solution = scipy.sparse.linalg.spsolve(quad, -lin)
         except Exception as e:
             # Use iterative solver for large textures
-            logging.error(f"scipy.sparse.linalg.spsolve() failed: {e:s}")
+            logging.error(f"scipy.sparse.linalg.spsolve() failed: {e}")
             logging.info(
                 f"Using iterative solver for large system (nnz={quad.nnz})")
             textureVec = texture.reshape(N, -1)
