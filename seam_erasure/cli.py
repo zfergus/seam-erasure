@@ -70,20 +70,20 @@ def parse_args(parser=None):
             (in_mesh, in_texture, out_texture, loadFromDirectory, loadFromData,
              method, sv_method)
     """
-    if(parser is None):
+    if (parser is None):
         parser = create_parser()
     args = parser.parse_args()
 
     # Check that in_mesh exists
-    if(not os.path.exists(args.in_mesh)):
+    if (not os.path.exists(args.in_mesh)):
         parser.error("Path to input mesh does not exist.")
     # Check that in_texture exists
-    if(not os.path.exists(args.in_texture)):
+    if (not os.path.exists(args.in_texture)):
         parser.error("Path to input texture(s) does not exist.")
 
     loadFromDirectory = os.path.isdir(args.in_texture)
-    if(args.out_texture is None):
-        if(loadFromDirectory):
+    if (args.out_texture is None):
+        if (loadFromDirectory):
             args.out_texture = os.path.normpath(args.in_texture +
                                                 "/erased") + "/"
         else:
@@ -92,13 +92,13 @@ def parse_args(parser=None):
             # Create a temporary output texture filename.
             args.out_texture = in_path + '-erased' + in_ext
     else:
-        if(loadFromDirectory):
-            if(os.path.isfile(args.out_texture)):
+        if (loadFromDirectory):
+            if (os.path.isfile(args.out_texture)):
                 parser.error("Input texture is a directory, but output is a " +
                              "file.")
             args.out_texture += "/"
         else:
-            if(os.path.isdir(args.out_texture)):
+            if (os.path.isdir(args.out_texture)):
                 parser.error("Input texture is a file, but output is a " +
                              "directory.")
 
@@ -107,7 +107,7 @@ def parse_args(parser=None):
                   "lerp": seam_erasure.SeamValueMethod.LERP}
     sv_method = sv_methods[args.sv_method]
 
-    if(loadFromDirectory and sv_method == sv_methods["lerp"]):
+    if (loadFromDirectory and sv_method == sv_methods["lerp"]):
         parser.error("Unable to perform seam value energy computation using " +
                      "lerp while performing batch texture solving.")
 
@@ -127,7 +127,7 @@ def loadTextures(in_path, loadFromDirectory, loadFromData):
         Returns array of texture data and list of cooresponding
         InputTextureFile objects.
     """
-    if(loadFromDirectory):
+    if (loadFromDirectory):
         files = sorted([f for f in os.listdir(in_path) if
                         os.path.isfile(os.path.join(in_path, f))])
     else:
@@ -138,13 +138,13 @@ def loadTextures(in_path, loadFromDirectory, loadFromData):
     textureData = None
     for f in files:
         fpath = os.path.join(in_path, f)
-        if(loadFromData or os.path.splitext(f)[1] == ".data"):
+        if (loadFromData or os.path.splitext(f)[1] == ".data"):
             data = weight_data.read_tex_from_path(fpath)[0]
             isFloatTexture, isDataFile = True, True
         else:
             data = numpy.array(texture.load_texture(fpath))
             isFloatTexture = not issubclass(data.dtype.type, numpy.integer)
-            if(not isFloatTexture):
+            if (not isFloatTexture):
                 data = data / 255.0
             isDataFile = False
 
@@ -172,7 +172,7 @@ def saveTextures(outData, textures, out_path, loadFromDirectory):
     assert len(outData.shape) == 3
 
     out_dir = os.path.dirname(out_path)
-    if(out_dir != "" and not os.path.exists(out_dir)):
+    if (out_dir != "" and not os.path.exists(out_dir)):
         os.makedirs(out_dir)
 
     current_depth = 0
@@ -180,20 +180,20 @@ def saveTextures(outData, textures, out_path, loadFromDirectory):
         next_depth = current_depth + textureFile.depth
 
         textureData = outData[:, :, current_depth:next_depth]
-        if(textureData.shape[2] < 2):
+        if (textureData.shape[2] < 2):
             textureData = numpy.squeeze(textureData, axis=2)
 
-        if(not textureFile.isFloat):
+        if (not textureFile.isFloat):
             textureData = to_uint8(textureData, normalize=False)
 
         # Save the solved texture
-        if(loadFromDirectory):
+        if (loadFromDirectory):
             base, ext = os.path.splitext(textureFile.name)
             out_texture = os.path.join(out_path, base + "-erased" + ext)
         else:
             out_texture = out_path
 
-        if(textureFile.isDataFile):
+        if (textureFile.isDataFile):
             weight_data.write_tex_to_path(out_texture, textureData)
         else:
             texture.save_texture(textureData, out_texture)
@@ -205,7 +205,8 @@ def main():
     logging.basicConfig(
         # format="[%(levelname)s] [%(asctime)s] %(message)s",
         format="%(message)s",
-        datefmt="%m/%d/%Y %I:%M:%S %p", level=logging.INFO)
+        datefmt="%m/%d/%Y %I:%M:%S %p",
+        level=logging.INFO)
     (in_mesh, in_texture, out_texture, loadFromDirectory, loadFromData,
         sv_method, do_global) = parse_args()
 

@@ -199,36 +199,45 @@ def erase_seam(mesh, texture, sv_method=SeamValueMethod.NONE, do_global=False):
     dot_process = Process(target=print_dots)
     dot_process.start()
 
-    # Use iterative solver for large textures
-    if (quad.nnz >= 2e6):
-        logging.info(
-            "Using iterative solver for large system (nnz={})".format(quad.nnz))
-        textureVec = texture.reshape(N, -1)
-        solution = numpy.empty(textureVec.shape)
-        for j in range(textureVec.shape[1]):
-            logging.info("Solving channel {}".format(j))
-
-            def callback(xk): return logging.debug("||Qx - l||={:.3e}".format(
-                numpy.linalg.norm(quad.dot(xk) + lin[:, j].toarray().flatten())))
-            solution[:, j], _ = scipy.sparse.linalg.cg(
-                quad, (-lin[:, j]).toarray(), x0=textureVec[:, j],
-                tol=1 / 255., atol=1 / 255., callback=callback)
-    # Use direct solver for smaller textures
-    else:
+    try:
+        # CVXOPT cholmod linsolve should be less memory intensive.
+        import cvxopt
+        import cvxopt.cholmod
+        quad = quad.tocoo()
+        system = cvxopt.spmatrix(quad.data, numpy.array(quad.row, dtype=int),
+                                 numpy.array(quad.col, dtype=int))
+        rhs = cvxopt.matrix(-lin.toarray())
+        cvxopt.cholmod.linsolve(system, rhs)
+        solution = numpy.array(rhs)
+    except Exception as e:
+        logging.warning(
+            f"cvxopt.cholmod failed, using scipy.sparse.linalg.spsolve(): {e:s}")
         try:
-            # CVXOPT cholmod linsolve should be less memory intensive.
-            import cvxopt
-            import cvxopt.cholmod
-            quad = quad.tocoo()
-            system = cvxopt.spmatrix(quad.data, numpy.array(quad.row, dtype=int),
-                                     numpy.array(quad.col, dtype=int))
-            rhs = cvxopt.matrix(-lin.toarray())
-            cvxopt.cholmod.linsolve(system, rhs)
-            solution = numpy.array(rhs)
-        except Exception as e:
-            logging.warning("cvxopt.cholmod failed, "
-                            + "using scipy.sparse.linalg.spsolve(): %s" % e)
             solution = scipy.sparse.linalg.spsolve(quad, -lin)
+        except Exception as e:
+            # Use iterative solver for large textures
+            logging.error(f"scipy.sparse.linalg.spsolve() failed: {e:s}")
+            logging.info(
+                f"Using iterative solver for large system (nnz={quad.nnz})")
+            textureVec = texture.reshape(N, -1)
+            solution = numpy.empty(textureVec.shape)
+            for j in range(textureVec.shape[1]):
+                logging.info("Solving channel {}".format(j))
+
+                def callback(xk):
+                    return logging.debug("||Qx - l||={:.3e}".format(
+                        numpy.linalg.norm(quad.dot(xk) + lin[:, j].toarray().flatten())))
+
+                solution[:, j], _ = scipy.sparse.linalg.cg(
+                    quad,
+                    (-lin[:, j]).toarray(), x0=textureVec[:, j],
+                    rtol=1 / 255.,
+                    atol=1 / 255.,
+                    maxiter=100,
+                    callback=callback
+                )
+
+    # Use direct solver for smaller textures
     dot_process.terminate()
 
     logging.info("Done\n")
